@@ -1,6 +1,4 @@
-package com.pa1.logan.Healthcious
-
-import androidx.compose.runtime.mutableStateListOf
+package com.pa1.logan.Healthcious.VM
 
 class HealthVM {
 
