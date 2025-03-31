@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "870576114774",
+    "project_id": "recipes-49ba5",
+    "storage_bucket": "recipes-49ba5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:870576114774:android:e0bd6ad6406ecb469a7ff7",
+        "android_client_info": {
+          "package_name": "com.pa1.logan.Healthcious"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZwNMr_p64dEekaeVG0jBVYhPjdPznsxQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
