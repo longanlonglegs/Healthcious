@@ -29,13 +29,15 @@ import com.example.compose.AppTheme
 import com.pa1.logan.Healthcious.VM.Recipe
 import com.pa1.logan.Healthcious.VM.RecipeVM
 import com.pa1.logan.Healthcious.database.fetchRecipes
+import com.pa1.logan.Healthcious.database.fetchUserRecipes
+import com.pa1.logan.Healthcious.database.getCurrentUser
 import com.pa1.logan.Healthcious.ui.composables.MainPage
 
 @Composable
 fun RecipeList(navController: NavController?, paddingValues: PaddingValues) {
 
     var search by remember { mutableStateOf("") }
-    val recipeVM = RecipeVM()
+    val recipeVM = remember { RecipeVM() }
 
 
     LaunchedEffect(Unit) {
@@ -46,10 +48,19 @@ fun RecipeList(navController: NavController?, paddingValues: PaddingValues) {
                              },
             onFailure = { }
         )
+        if (getCurrentUser() != null)fetchUserRecipes(
+            onDataReceived = {
+                recipeVM.recipeList.value = it + recipeVM.recipeList.value
+                Log.d("RecipeList", "Fetched ${it.size} recipes")
+            },
+            onFailure = { }
+        )
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(paddingValues)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
     )
     {
         Searchbar(search)

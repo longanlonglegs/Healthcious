@@ -55,7 +55,9 @@ fun Food(navController: NavController?, recipe: Recipe) {
         topBar = {
             TopAppBar(
                 title = { Text("Recipe", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())},
-                navigationIcon = { IconButton(onClick = {}) {Icon(Icons.AutoMirrored.Default.ArrowBack, "go back")} },
+                navigationIcon = { IconButton(onClick = {
+                    navController?.navigate("main")
+                }) {Icon(Icons.AutoMirrored.Default.ArrowBack, "go back")} },
                 actions = {
                     IconButton(onClick = {
                         TODO("star a recipe")
@@ -87,6 +89,9 @@ fun Food(navController: NavController?, recipe: Recipe) {
 
 @Composable
 fun ItemScreen(paddingValues: PaddingValues, recipe: Recipe) {
+
+    val name = recipe.name.replace("+", " ")
+
     Column (
         Modifier
             .padding(paddingValues)
@@ -94,7 +99,7 @@ fun ItemScreen(paddingValues: PaddingValues, recipe: Recipe) {
     ){
 
         Image(
-            painter = showImg("images/${recipe.name}.png"),
+            painter = showImg("images/${name}.png"),
             "recipe image",
             modifier = Modifier
                 .fillMaxWidth()
@@ -113,7 +118,7 @@ fun ItemScreen(paddingValues: PaddingValues, recipe: Recipe) {
             )
 
             Text(
-                recipe.name,
+                name,
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 25.sp,
                 lineHeight = 25.sp,

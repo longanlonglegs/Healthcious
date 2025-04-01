@@ -44,8 +44,10 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.compose.AppTheme
 import com.pa1.logan.Healthcious.R
 import com.pa1.logan.Healthcious.VM.Recipe
+import com.pa1.logan.Healthcious.database.getCurrentUser
 import com.pa1.logan.Healthcious.database.uploadImg
 import com.pa1.logan.Healthcious.database.writeRecipe
+import com.pa1.logan.Healthcious.database.writeUserRecipe
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,15 +93,6 @@ fun Customize(navController: NavController?) {
         },
 
     )
-}
-
-fun checkFloat(string: String) : Float{
-
-    if (string.toFloatOrNull() != null && string.toFloat() >= 0f) {
-        return string.toFloat()
-    }
-
-    return -1f
 }
 
 @Composable
@@ -209,10 +202,36 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
 
                             })
 
-                            writeRecipe(Recipe(dish, checkFloat(calories), checkFloat(salt), checkFloat(sugar), description, listOf(), listOf(), ""))
+                            if (getCurrentUser() != null) {
+                                writeUserRecipe(Recipe(
+                                    dish,
+                                    calories.toFloat(),
+                                    salt.toFloat(),
+                                    sugar.toFloat(),
+                                    description,
+                                    listOf(),
+                                    listOf(),
+                                    ""
+                                ),
+                                    onResult = { success, message ->
+                                        if (success) {
+                                            Toast.makeText(
+                                                context,
+                                                "Upload Successful",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            navController?.navigate("main")
+                                        } else Toast.makeText(context, message, Toast.LENGTH_SHORT)
+                                            .show()
+                                    }
+                                )
 
-                            Toast.makeText(context, "Upload Successful", Toast.LENGTH_SHORT).show()
-                            navController?.navigate("main")
+                                Toast.makeText(context, "Upload Successful", Toast.LENGTH_SHORT)
+                                    .show()
+                                navController?.navigate("main")
+                            }
+
+                            else Toast.makeText(context, "Upload Failed", Toast.LENGTH_SHORT).show()
 
                         }
                         canUpload = false

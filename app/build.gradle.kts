@@ -60,6 +60,8 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-database")
     implementation(libs.firebase.storage.ktx)
+    implementation(libs.firebase.database.ktx)
+    implementation(libs.firebase.appcheck.playintegrity)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

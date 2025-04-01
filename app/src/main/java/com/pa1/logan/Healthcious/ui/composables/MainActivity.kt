@@ -15,6 +15,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.compose.AppTheme
+import com.google.firebase.appcheck.FirebaseAppCheck
+import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.gson.Gson
 import com.pa1.logan.Healthcious.VM.Recipe
 import com.pa1.logan.Healthcious.database.showImg
@@ -24,6 +26,7 @@ import com.pa1.logan.Healthcious.ui.composables.health.Health
 import com.pa1.logan.Healthcious.ui.composables.misc.Customize
 import com.pa1.logan.Healthcious.ui.composables.misc.Settings
 import com.pa1.logan.Healthcious.ui.composables.misc.ShoppingCart
+import com.pa1.logan.Healthcious.ui.composables.misc.SignUpPage
 import com.pa1.logan.Healthcious.ui.composables.onboarding.Onboarding
 import com.pa1.logan.Healthcious.ui.composables.recipe.Food
 import com.pa1.logan.Healthcious.ui.composables.recipe.Recipe
@@ -64,6 +67,7 @@ fun MainApp() {
         composable("purchase") { PurchaseList() }
         composable("health") { Health(navController) }
         composable("shoppingcart") { ShoppingCart(navController) }
+        composable("signup") { SignUpPage(navController) }
 
     }
 }

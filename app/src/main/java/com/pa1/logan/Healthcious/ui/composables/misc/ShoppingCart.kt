@@ -119,7 +119,7 @@ fun ShoppingCart(navController: NavController?) {
             NavigationBar {
                 NavigationBarItem(
                     onClick = {
-                        navController?.navigate("recipe")
+                        navController?.navigate("menu")
                     },
                     icon = { Icon(Icons.Default.Lock, "Recipe")},
                     selected = false,

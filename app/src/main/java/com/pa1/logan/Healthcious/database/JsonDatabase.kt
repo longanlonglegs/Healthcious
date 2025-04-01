@@ -57,6 +57,40 @@ fun fetchRecipes(onDataReceived: (List<Recipe>) -> Unit, onFailure: (Exception) 
     })
 }
 
+fun writeUserRecipe(recipe: Recipe, onResult: (Boolean, String?) -> Unit) {
+
+    val ref = Firebase.database.reference
+
+    val user = getCurrentUser()
+
+    if (user != null ) ref.child(user.email.toString().substringBefore("@")).child(recipe.name).setValue(recipe)
+    else Log.d("writing recipe error", "error with writing recipe")
+}
+
+fun fetchUserRecipes(onDataReceived: (List<Recipe>) -> Unit, onFailure: (Exception) -> Unit) {
+    val database = FirebaseDatabase.getInstance()
+    val user = getCurrentUser()
+    var ref = database.getReference("recipes")
+
+    if (user != null) ref = database.getReference(user.email.toString().substringBefore("@")) // Points to recipes node in Firebase
+
+    ref.addValueEventListener(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            val recipesList = mutableListOf<Recipe>()
+            for (recipeSnapshot in snapshot.children) {
+                val recipe = recipeSnapshot.getValue(Recipe::class.java)
+                recipe?.let { recipesList.add(it) }
+            }
+            onDataReceived(recipesList)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("Firebase", "Error fetching data: ${error.message}")
+            onFailure(error.toException())
+        }
+    })
+}
+
 //@Composable
 //fun RecipeListScreen() {
 //    var recipes by remember { mutableStateOf(RecipeVM().recipeList) }

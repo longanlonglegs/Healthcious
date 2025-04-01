@@ -91,9 +91,11 @@ fun MainPage(navController: NavController?) {
 
             actions = {
                 IconButton(
-                    onClick = {}
+                    onClick = {
+                        navController?.navigate("signup")
+                    }
                 ){
-                    Icon(Icons.Default.AccountCircle, "menu")
+                    Icon(Icons.Default.AccountCircle, "sign up")
                 }
             }
         )},
@@ -116,7 +118,7 @@ fun MainPage(navController: NavController?) {
             NavigationBar (modifier = Modifier.height(80.dp), containerColor = Color.Transparent){
                 NavigationBarItem(
                     onClick = {
-                        navController?.navigate("recipe")
+                        navController?.navigate("main")
                     },
                     icon = { Icon(Icons.Default.Lock, "Recipe")},
                     selected = true,
