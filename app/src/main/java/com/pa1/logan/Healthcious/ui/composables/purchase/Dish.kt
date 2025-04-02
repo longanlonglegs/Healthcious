@@ -1,23 +1,18 @@
-package com.pa1.logan.Healthcious.ui.composables.recipe
+package com.pa1.logan.Healthcious.ui.composables.purchase
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -28,51 +23,42 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.compose.AppTheme
-import com.pa1.logan.Healthcious.R
 import com.pa1.logan.Healthcious.VM.Purchases
-import com.pa1.logan.Healthcious.VM.Recipe
 import com.pa1.logan.Healthcious.database.showImg
+import com.pa1.logan.Healthcious.ui.composables.recipe.ItemScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Food(navController: NavController?, recipe: Recipe) {
+fun Dish(navController: NavController?, purchases: Purchases) {
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Recipe", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())},
+                title = { Text("Purchase", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
                 navigationIcon = { IconButton(onClick = {
-                    navController?.navigate("main")
-                }) {Icon(Icons.AutoMirrored.Default.ArrowBack, "go back")} },
+                    navController?.navigate("purchase")
+                }) { Icon(Icons.AutoMirrored.Default.ArrowBack, "go back") } },
                 actions = {
                     IconButton(onClick = {
                         TODO("star a recipe")
                     }) {
 
-                        Icon(Icons.Default.Favorite, "save this recipe")
+                        Icon(Icons.Default.Favorite, "save this purchase")
 
                     }
                 }
             )
         },
         content = {
-            paddingValues ->
-            ItemScreen(paddingValues, recipe)
+                paddingValues ->
+            DishScreen(paddingValues, purchases)
         },
         bottomBar = {
             NavigationBar {
@@ -80,7 +66,7 @@ fun Food(navController: NavController?, recipe: Recipe) {
                     onClick = {
                         TODO()
                     },
-                    icon = { Icon(Icons.Default.ShoppingCart, "eat")},
+                    icon = { Icon(Icons.Default.ShoppingCart, "eat") },
                     selected = true,
                 )
             }
@@ -88,10 +74,11 @@ fun Food(navController: NavController?, recipe: Recipe) {
     )
 }
 
-@Composable
-fun ItemScreen(paddingValues: PaddingValues, recipe: Recipe) {
 
-    val name = recipe.name.replace("+", " ")
+@Composable
+fun DishScreen(paddingValues: PaddingValues, purchases: Purchases) {
+
+    val name = purchases.name.replace("+", " ")
 
     Column (
         Modifier
@@ -100,7 +87,7 @@ fun ItemScreen(paddingValues: PaddingValues, recipe: Recipe) {
     ){
 
         Image(
-            painter = showImg("images/recipes/${name}.png"),
+            painter = showImg("images/purchases/${name}.png"),
             "recipe image",
             modifier = Modifier
                 .fillMaxWidth()
@@ -110,7 +97,7 @@ fun ItemScreen(paddingValues: PaddingValues, recipe: Recipe) {
 
         Column {
             Text(
-                recipe.cuisine,
+                "Purchase",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 10.dp),
@@ -137,7 +124,7 @@ fun ItemScreen(paddingValues: PaddingValues, recipe: Recipe) {
         ) {
             Card{
                 Text(
-                    "${recipe.calories.toInt()}kcal",
+                    "${purchases.calories.toInt()}kcal",
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
                     lineHeight = 20.sp,
@@ -147,7 +134,7 @@ fun ItemScreen(paddingValues: PaddingValues, recipe: Recipe) {
 
             Card {
                 Text(
-                    "${recipe.salt.toInt()}g salt", fontSize = 20.sp,
+                    "${purchases.salt.toInt()}g salt", fontSize = 20.sp,
                     lineHeight = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = (Modifier.padding(5.dp))
@@ -156,22 +143,13 @@ fun ItemScreen(paddingValues: PaddingValues, recipe: Recipe) {
 
             Card {
                 Text(
-                    "${recipe.sugar.toInt()}g sugar", fontSize = 20.sp,
+                    "${purchases.sugar.toInt()}g sugar", fontSize = 20.sp,
                     lineHeight = 20.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = (Modifier.padding(5.dp))
                 )
             }
 
-        }
-
-        Column (Modifier.padding(horizontal = 10.dp), ){
-            Text(
-                recipe.instructions,
-                textAlign = TextAlign.Start,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text("Allergens: ${ recipe.allergens }", color = Color.Red)
         }
     }
 }

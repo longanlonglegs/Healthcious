@@ -18,9 +18,10 @@ import com.example.compose.AppTheme
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.gson.Gson
+import com.pa1.logan.Healthcious.VM.Purchases
 import com.pa1.logan.Healthcious.VM.Recipe
 import com.pa1.logan.Healthcious.database.showImg
-import com.pa1.logan.Healthcious.database.uploadImg
+import com.pa1.logan.Healthcious.database.writePurchase
 import com.pa1.logan.Healthcious.database.writeRecipe
 import com.pa1.logan.Healthcious.ui.composables.health.Health
 import com.pa1.logan.Healthcious.ui.composables.misc.Customize
@@ -28,6 +29,8 @@ import com.pa1.logan.Healthcious.ui.composables.misc.Settings
 import com.pa1.logan.Healthcious.ui.composables.misc.ShoppingCart
 import com.pa1.logan.Healthcious.ui.composables.misc.SignUpPage
 import com.pa1.logan.Healthcious.ui.composables.onboarding.Onboarding
+import com.pa1.logan.Healthcious.ui.composables.purchase.Dish
+import com.pa1.logan.Healthcious.ui.composables.purchase.PurchasePage
 import com.pa1.logan.Healthcious.ui.composables.recipe.Food
 import com.pa1.logan.Healthcious.ui.composables.recipe.Recipe
 import com.pa1.logan.Healthcious.ui.composables.recipe.RecipeList
@@ -61,10 +64,21 @@ fun MainApp() {
                 //call navController.navigate("customize/${recipe}")
             }
         }
+        composable("dish/{dish}",
+            listOf(
+                navArgument("dish") { NavType.StringType },
+            )
+        ) {backStackEntry->
+            val dish = backStackEntry.arguments?.getString("dish")
+            if (dish != null) {
+                Dish(navController, Gson().fromJson(dish, Purchases::class.java))
+                //call navController.navigate("customize/${recipe}")
+            }
+        }
         composable("settings") { Settings() }
         composable("customize") { Customize(navController) }
         composable("recipe") { RecipeList(navController, PaddingValues(5.dp)) }
-        composable("purchase") { PurchaseList() }
+        composable("purchase") { PurchasePage(navController) }
         composable("health") { Health(navController) }
         composable("shoppingcart") { ShoppingCart(navController) }
         composable("signup") { SignUpPage(navController) }

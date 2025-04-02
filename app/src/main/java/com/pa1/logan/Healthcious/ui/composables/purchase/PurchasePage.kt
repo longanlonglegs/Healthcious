@@ -1,4 +1,7 @@
-package com.pa1.logan.Healthcious.ui.composables
+package com.pa1.logan.Healthcious.ui.composables.purchase
+
+import com.pa1.logan.Healthcious.ui.composables.MainPage
+import com.pa1.logan.Healthcious.ui.composables.MinimalDropdownMenu
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -65,7 +68,7 @@ import java.nio.charset.StandardCharsets
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainPage(navController: NavController?) {
+fun PurchasePage(navController: NavController?) {
 
     Scaffold(
         topBar = { TopAppBar(
@@ -82,8 +85,8 @@ fun MainPage(navController: NavController?) {
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-                
-                    },
+
+            },
 
             navigationIcon = {
                 MinimalDropdownMenu(navController)
@@ -101,8 +104,8 @@ fun MainPage(navController: NavController?) {
         )},
 
         content = {
-            paddingValues ->
-            RecipeList(navController, paddingValues)
+                paddingValues ->
+            PurchaseList(navController, paddingValues)
         },
 
         floatingActionButton = {
@@ -121,14 +124,14 @@ fun MainPage(navController: NavController?) {
                         navController?.navigate("main")
                     },
                     icon = { Icon(Icons.Default.Lock, "Recipe")},
-                    selected = true,
+                    selected = false,
                 )
                 NavigationBarItem(
                     onClick = {
                         navController?.navigate("purchase")
                     },
                     icon = { Icon(Icons.Default.AccountBox, "Purchase")},
-                    selected = false,
+                    selected = true,
                 )
                 NavigationBarItem(
                     onClick = {
@@ -150,39 +153,11 @@ fun MainPage(navController: NavController?) {
 
 }
 
-@Composable
-fun MinimalDropdownMenu(navController: NavController?) {
-    var expanded by remember { mutableStateOf(false) }
-    Box(
-        modifier = Modifier
-            .padding(16.dp)
-    ) {
-        IconButton(onClick = { expanded = !expanded }) {
-            Icon(Icons.Default.Menu, contentDescription = "More options")
-        }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            DropdownMenuItem(
-                text = { Text("Custom Recipe") },
-                onClick = {
-
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Option 2") },
-                onClick = { /* Do something... */ }
-            )
-        }
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
-fun MainPagePreview() {
+fun PurchasePagePreview() {
     AppTheme {
-        MainPage(navController = null)
+        PurchasePage(navController = null)
     }
 }
 

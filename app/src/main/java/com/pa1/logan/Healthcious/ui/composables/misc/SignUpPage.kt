@@ -38,7 +38,6 @@ import com.pa1.logan.Healthcious.R
 import com.pa1.logan.Healthcious.VM.Recipe
 import com.pa1.logan.Healthcious.database.signInWithEmail
 import com.pa1.logan.Healthcious.database.signUpWithEmail
-import com.pa1.logan.Healthcious.database.uploadImg
 import com.pa1.logan.Healthcious.database.writeRecipe
 
 

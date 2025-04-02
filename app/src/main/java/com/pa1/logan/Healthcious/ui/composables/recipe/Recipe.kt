@@ -52,7 +52,7 @@ fun Recipe(navController: NavController?, recipe: Recipe) {
 
         ) {
             Image(
-                 painter = showImg("images/${recipe.name}.png"),
+                 painter = showImg("images/recipes/${recipe.name}.png"),
                  contentDescription = "Firebase Image",
                  modifier = Modifier
                     .fillMaxWidth()

@@ -4,6 +4,7 @@ import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -42,11 +43,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.compose.AppTheme
+import com.google.android.play.integrity.internal.l
 import com.pa1.logan.Healthcious.R
+import com.pa1.logan.Healthcious.VM.Purchases
 import com.pa1.logan.Healthcious.VM.Recipe
 import com.pa1.logan.Healthcious.database.getCurrentUser
-import com.pa1.logan.Healthcious.database.uploadImg
+import com.pa1.logan.Healthcious.database.uploadRecipeImg
 import com.pa1.logan.Healthcious.database.writeRecipe
+import com.pa1.logan.Healthcious.database.writeUserPurchase
 import com.pa1.logan.Healthcious.database.writeUserRecipe
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,11 +99,18 @@ fun Customize(navController: NavController?) {
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Custom(paddingValues: PaddingValues, navController: NavController?) {
 
+    var foodType by remember { mutableStateOf(true) }
     var dish by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var allergen by remember { mutableStateOf("") }
+    var allergenList by remember { mutableStateOf(listOf<String>()) }
+    var ingredientList by remember { mutableStateOf(listOf<String>()) }
+    var ingredients by remember { mutableStateOf("") }
+    var cuisine by remember { mutableStateOf("") }
     var calories by remember { mutableStateOf("") }
     var salt by remember { mutableStateOf("") }
     var sugar by remember { mutableStateOf("") }
@@ -121,6 +132,26 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ){
+
+        stickyHeader {
+            Row (Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Button(onClick = {
+                    foodType = true
+                }) {
+                    Text("Recipe")
+                }
+
+                Button(onClick = {
+                    foodType = false
+                }) {
+                    Text("Purchase")
+                }
+            }
+        }
 
         item {
             imageUri?.let {
@@ -187,6 +218,38 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
                 singleLine = true,
                 supportingText = { Text("Enter the total salt content") }
             )
+        }
+
+        if (foodType) item {
+            TextField(
+                value = ingredients,
+                onValueChange = { ingredients = it },
+                Modifier.fillMaxWidth(),
+                label = { Text("Ingredients") },
+                singleLine = true,
+                supportingText = { Text("Enter the ingredients, separated by commas") }
+            )
+
+            TextField(
+                value = allergen,
+                onValueChange = { allergen = it },
+                Modifier.fillMaxWidth(),
+                label = { Text("Allergen") },
+                singleLine = true,
+                supportingText = { Text("Enter the allergens, separated by commas") }
+            )
+
+            TextField(
+                value = cuisine,
+                onValueChange = { cuisine = it },
+                Modifier.fillMaxWidth(),
+                label = { Text("Cuisine") },
+                singleLine = true,
+                supportingText = { Text("Enter the  cuisine") }
+            )
+        }
+
+        item {
 
             Row(
                 Modifier.fillMaxWidth(),
@@ -197,34 +260,70 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
                     onClick = {
                         if (canUpload) {
 
-                            uploadImg(dish, imageUri!!, onUploadSuccess = { url ->
+                            uploadRecipeImg(dish, imageUri!!, onUploadSuccess = { url ->
                                 uploadedImageUrl = url
 
                             })
 
                             if (getCurrentUser() != null) {
-                                writeUserRecipe(Recipe(
-                                    dish,
-                                    calories.toFloat(),
-                                    salt.toFloat(),
-                                    sugar.toFloat(),
-                                    description,
-                                    listOf(),
-                                    listOf(),
-                                    ""
-                                ),
-                                    onResult = { success, message ->
-                                        if (success) {
-                                            Toast.makeText(
+                                if (foodType) {
+
+                                    allergenList = allergen.split("[ ]*,[ ]*".toRegex())
+                                    ingredientList = ingredients.split("[ ]*,[ ]*".toRegex())
+
+                                    writeUserRecipe(Recipe(
+                                        dish,
+                                        calories.toFloat(),
+                                        salt.toFloat(),
+                                        sugar.toFloat(),
+                                        description,
+                                        allergenList,
+                                        ingredientList,
+                                        cuisine
+                                    ),
+                                        onResult = { success, message ->
+                                            if (success) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Upload Successful",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                navController?.navigate("main")
+                                            } else Toast.makeText(
                                                 context,
-                                                "Upload Successful",
+                                                message,
                                                 Toast.LENGTH_SHORT
-                                            ).show()
-                                            navController?.navigate("main")
-                                        } else Toast.makeText(context, message, Toast.LENGTH_SHORT)
-                                            .show()
-                                    }
-                                )
+                                            )
+                                                .show()
+                                        }
+                                    )
+                                }
+
+                                else {
+
+                                    writeUserPurchase(Purchases(
+                                        dish,
+                                        calories.toFloat(),
+                                        salt.toFloat(),
+                                        sugar.toFloat(),
+                                    ),
+                                        onResult = { success, message ->
+                                            if (success) {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Upload Successful",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                navController?.navigate("main")
+                                            } else Toast.makeText(
+                                                context,
+                                                message,
+                                                Toast.LENGTH_SHORT
+                                            )
+                                                .show()
+                                        }
+                                    )
+                                }
 
                                 Toast.makeText(context, "Upload Successful", Toast.LENGTH_SHORT)
                                     .show()
@@ -259,6 +358,7 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
 fun DeleteDish(navController: NavController?){
     navController?.navigate("main")
     }
+
 
 @Preview(showBackground = true)
 @Composable

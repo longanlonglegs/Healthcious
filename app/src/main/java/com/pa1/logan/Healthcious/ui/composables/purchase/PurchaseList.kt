@@ -1,4 +1,4 @@
-package com.pa1.logan.Healthcious.ui.composables.recipe
+package com.pa1.logan.Healthcious.ui.composables.purchase
 
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
@@ -26,33 +26,38 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.compose.AppTheme
+import com.pa1.logan.Healthcious.VM.PurchaseVM
+import com.pa1.logan.Healthcious.VM.Purchases
 import com.pa1.logan.Healthcious.VM.Recipe
 import com.pa1.logan.Healthcious.VM.RecipeVM
+import com.pa1.logan.Healthcious.database.fetchPurchases
 import com.pa1.logan.Healthcious.database.fetchRecipes
+import com.pa1.logan.Healthcious.database.fetchUserPurchases
 import com.pa1.logan.Healthcious.database.fetchUserRecipes
 import com.pa1.logan.Healthcious.database.getCurrentUser
 import com.pa1.logan.Healthcious.ui.composables.MainPage
 import com.pa1.logan.Healthcious.ui.composables.misc.Searchbar
+import com.pa1.logan.Healthcious.ui.composables.recipe.RecipeList
 
 @Composable
-fun RecipeList(navController: NavController?, paddingValues: PaddingValues) {
+fun PurchaseList(navController: NavController?, paddingValues: PaddingValues) {
 
     var search by remember { mutableStateOf("") }
-    val recipeVM = remember { RecipeVM() }
+    val purchaseVM = remember { PurchaseVM() }
 
 
     LaunchedEffect(Unit) {
-        fetchRecipes(
+        fetchPurchases(
             onDataReceived = {
-                recipeVM.recipeList.value = it
-                Log.d("RecipeList", "Fetched ${it.size} recipes")
-                             },
+                purchaseVM.purchaseList.value = it
+                Log.d("Purchase list", "Fetched ${it.size} purchase")
+            },
             onFailure = { }
         )
-        if (getCurrentUser() != null)fetchUserRecipes(
+        if (getCurrentUser() != null) fetchUserPurchases(
             onDataReceived = {
-                recipeVM.recipeList.value = it + recipeVM.recipeList.value
-                Log.d("RecipeList", "Fetched ${it.size} recipes")
+                purchaseVM.purchaseList.value = it + purchaseVM.purchaseList.value
+                Log.d("Purchase list", "Fetched ${it.size} purchases")
             },
             onFailure = { }
         )
@@ -75,20 +80,12 @@ fun RecipeList(navController: NavController?, paddingValues: PaddingValues) {
             horizontalArrangement = Arrangement.spacedBy(5.dp),
         ) {
 
-            for (recipe in recipeVM.recipeList.value) {
+            for (purchase in purchaseVM.purchaseList.value) {
                 item {
-                    Recipe(navController, recipe)
+                    Purchase(navController, purchase)
                 }
             }
 
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun RecipeListPreview() {
-    AppTheme {
-        RecipeList(navController = null, PaddingValues(5.dp))
     }
 }

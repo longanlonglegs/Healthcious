@@ -26,6 +26,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.firebase.database.getValue
+import com.pa1.logan.Healthcious.VM.Purchases
 import com.pa1.logan.Healthcious.VM.Recipe
 import com.pa1.logan.Healthcious.VM.RecipeVM
 
@@ -35,6 +36,14 @@ fun writeRecipe(recipe: Recipe) {
 
     ref.child("recipes").child(recipe.name).setValue(recipe)
 }
+
+fun writePurchase(purchases: Purchases) {
+
+    val ref = Firebase.database.reference
+
+    ref.child("purchases").child(purchases.name).setValue(purchases)
+}
+
 
 fun fetchRecipes(onDataReceived: (List<Recipe>) -> Unit, onFailure: (Exception) -> Unit) {
     val database = FirebaseDatabase.getInstance()
@@ -63,7 +72,7 @@ fun writeUserRecipe(recipe: Recipe, onResult: (Boolean, String?) -> Unit) {
 
     val user = getCurrentUser()
 
-    if (user != null ) ref.child(user.email.toString().substringBefore("@")).child(recipe.name).setValue(recipe)
+    if (user != null ) ref.child(user.email.toString().substringBefore("@")).child("recipes").child(recipe.name).setValue(recipe)
     else Log.d("writing recipe error", "error with writing recipe")
 }
 
@@ -72,7 +81,7 @@ fun fetchUserRecipes(onDataReceived: (List<Recipe>) -> Unit, onFailure: (Excepti
     val user = getCurrentUser()
     var ref = database.getReference("recipes")
 
-    if (user != null) ref = database.getReference(user.email.toString().substringBefore("@")) // Points to recipes node in Firebase
+    if (user != null) ref = database.getReference("${user.email.toString().substringBefore("@")}/recipes") // Points to recipes node in Firebase
 
     ref.addValueEventListener(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
@@ -82,6 +91,62 @@ fun fetchUserRecipes(onDataReceived: (List<Recipe>) -> Unit, onFailure: (Excepti
                 recipe?.let { recipesList.add(it) }
             }
             onDataReceived(recipesList)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("Firebase", "Error fetching data: ${error.message}")
+            onFailure(error.toException())
+        }
+    })
+}
+
+fun fetchPurchases(onDataReceived: (List<Purchases>) -> Unit, onFailure: (Exception) -> Unit) {
+    val database = FirebaseDatabase.getInstance()
+    val ref = database.getReference("purchases") // Points to "recipes" node in Firebase
+
+    ref.addValueEventListener(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            val recipesList = mutableListOf<Purchases>()
+            for (recipeSnapshot in snapshot.children) {
+                val recipe = recipeSnapshot.getValue(Purchases::class.java)
+                recipe?.let { recipesList.add(it) }
+            }
+            onDataReceived(recipesList)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("Firebase", "Error fetching data: ${error.message}")
+            onFailure(error.toException())
+        }
+    })
+}
+
+
+fun writeUserPurchase(purchases: Purchases, onResult: (Boolean, String?) -> Unit) {
+
+    val ref = Firebase.database.reference
+
+    val user = getCurrentUser()
+
+    if (user != null ) ref.child(user.email.toString().substringBefore("@")).child("purchases").child(purchases.name).setValue(purchases)
+    else Log.d("writing purchases error", "error with writing purchases")
+}
+
+fun fetchUserPurchases(onDataReceived: (List<Purchases>) -> Unit, onFailure: (Exception) -> Unit) {
+    val database = FirebaseDatabase.getInstance()
+    val user = getCurrentUser()
+    var ref = database.getReference("purchases")
+
+    if (user != null) ref = database.getReference("${user.email.toString().substringBefore("@")}/purchases") // Points to recipes node in Firebase
+
+    ref.addValueEventListener(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            val purchaseList = mutableListOf<Purchases>()
+            for (purchaseSnapshot in snapshot.children) {
+                val purchase = purchaseSnapshot.getValue(Purchases::class.java)
+                purchase?.let { purchaseList.add(it) }
+            }
+            onDataReceived(purchaseList)
         }
 
         override fun onCancelled(error: DatabaseError) {
