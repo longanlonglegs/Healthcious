@@ -1,5 +1,6 @@
 package com.pa1.logan.Healthcious.ui.composables.recipe
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,6 +35,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
@@ -47,10 +49,13 @@ import com.pa1.logan.Healthcious.R
 import com.pa1.logan.Healthcious.VM.Purchases
 import com.pa1.logan.Healthcious.VM.Recipe
 import com.pa1.logan.Healthcious.database.showImg
+import com.pa1.logan.Healthcious.database.writeUserRecipe
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Food(navController: NavController?, recipe: Recipe) {
+
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -78,7 +83,23 @@ fun Food(navController: NavController?, recipe: Recipe) {
             NavigationBar {
                 NavigationBarItem(
                     onClick = {
-                        TODO()
+                        writeUserRecipe(recipe,
+                            onResult = { success, message ->
+                                if (success) {
+                                    Toast.makeText(
+                                        context,
+                                        "Om Nom! Yummy in my tummy!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    navController?.navigate("main")
+                                } else Toast.makeText(
+                                    context,
+                                    message,
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            }
+                        )
                     },
                     icon = { Icon(Icons.Default.ShoppingCart, "eat")},
                     selected = true,

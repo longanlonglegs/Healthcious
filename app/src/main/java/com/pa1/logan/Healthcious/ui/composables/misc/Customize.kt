@@ -16,28 +16,37 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.ShapeDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -48,6 +57,7 @@ import com.pa1.logan.Healthcious.R
 import com.pa1.logan.Healthcious.VM.Purchases
 import com.pa1.logan.Healthcious.VM.Recipe
 import com.pa1.logan.Healthcious.database.getCurrentUser
+import com.pa1.logan.Healthcious.database.uploadPurchaseImg
 import com.pa1.logan.Healthcious.database.uploadRecipeImg
 import com.pa1.logan.Healthcious.database.writeRecipe
 import com.pa1.logan.Healthcious.database.writeUserPurchase
@@ -65,8 +75,9 @@ fun Customize(navController: NavController?) {
                     horizontalArrangement = Arrangement.Center
                 ){
                     Text(
-                        "Your Recipe",
+                        "Your Dish",
                         modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
                     )
                 }
 
@@ -74,16 +85,16 @@ fun Customize(navController: NavController?) {
 
             navigationIcon = { IconButton(
                 onClick = {
-                    TODO("dropdown menu")
+                    navController?.navigate("main")
                 }
             ){
-                Icon(Icons.Default.Menu, "menu")
+                Icon(Icons.AutoMirrored.Default.ArrowBack, "back")
             }},
 
             actions = {
                 IconButton(
                     onClick = {
-                        TODO("sign into account")
+                        navController?.navigate("signin")
                     }
                 ){
                     Icon(Icons.Default.AccountCircle, "account")
@@ -99,11 +110,10 @@ fun Customize(navController: NavController?) {
     )
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun Custom(paddingValues: PaddingValues, navController: NavController?) {
 
-    var foodType by remember { mutableStateOf(true) }
     var dish by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var allergen by remember { mutableStateOf("") }
@@ -118,6 +128,8 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var uploadedImageUrl by remember { mutableStateOf<String?>(null) }
     var canUpload by remember { mutableStateOf(false) }
+    var selectedIndex by remember { mutableIntStateOf(0) }
+    val options = listOf("Recipe", "Purchase")
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -128,27 +140,31 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
     LazyColumn (
         Modifier
             .padding(paddingValues)
-            .padding(10.dp),
+            .padding(horizontal = 5.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ){
 
-        stickyHeader {
+        item {
             Row (Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-
-                Button(onClick = {
-                    foodType = true
-                }) {
-                    Text("Recipe")
-                }
-
-                Button(onClick = {
-                    foodType = false
-                }) {
-                    Text("Purchase")
+                SingleChoiceSegmentedButtonRow (
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .fillMaxWidth(),
+                ){
+                    options.forEachIndexed { index, label ->
+                        SegmentedButton(
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = index,
+                                count = options.size
+                            ),
+                            onClick = { selectedIndex = index },
+                            selected = index == selectedIndex,
+                            label = { Text(label) }
+                        )
+                    }
                 }
             }
         }
@@ -164,7 +180,7 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
                     contentScale = ContentScale.Crop
                 )
                 canUpload = true
-            } ?: Text("No image uploaded yet", style = MaterialTheme.typography.bodyLarge)
+            } ?: Image(painter = painterResource(R.drawable.logo), "add image")
         }
 
         item {
@@ -180,8 +196,10 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
                 Modifier.fillMaxWidth(),
                 label = { Text("Dish") },
                 singleLine = true,
-                supportingText = { Text("Enter your dish name") }
             )
+        }
+
+        item {
 
             TextField(
                 value = description,
@@ -189,64 +207,71 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
                 Modifier.fillMaxWidth(),
                 label = { Text("Description") },
                 singleLine = true,
-                supportingText = { Text("Enter a brief description") }
             )
+        }
 
+        item {
             TextField(
                 value = calories,
                 onValueChange = { calories = it },
                 Modifier.fillMaxWidth(),
                 label = { Text("Calories") },
                 singleLine = true,
-                supportingText = { Text("Enter the total caloric amount") }
             )
+        }
 
+        item {
             TextField(
                 value = sugar,
                 onValueChange = { sugar = it },
                 Modifier.fillMaxWidth(),
                 label = { Text("Sugar") },
                 singleLine = true,
-                supportingText = { Text("Enter the total sugar content") }
             )
+        }
 
+        item {
             TextField(
                 value = salt,
                 onValueChange = { salt = it },
                 Modifier.fillMaxWidth(),
                 label = { Text("Salt") },
                 singleLine = true,
-                supportingText = { Text("Enter the total salt content") }
             )
         }
 
-        if (foodType) item {
-            TextField(
-                value = ingredients,
-                onValueChange = { ingredients = it },
-                Modifier.fillMaxWidth(),
-                label = { Text("Ingredients") },
-                singleLine = true,
-                supportingText = { Text("Enter the ingredients, separated by commas") }
-            )
+        if (selectedIndex == 0) {
 
-            TextField(
-                value = allergen,
-                onValueChange = { allergen = it },
-                Modifier.fillMaxWidth(),
-                label = { Text("Allergen") },
-                singleLine = true,
-                supportingText = { Text("Enter the allergens, separated by commas") }
-            )
+            item {
+                TextField(
+                    value = ingredients,
+                    onValueChange = { ingredients = it },
+                    Modifier.fillMaxWidth(),
+                    label = { Text("Ingredients") },
+                    singleLine = true,
+                )
+            }
 
-            TextField(
-                value = cuisine,
-                onValueChange = { cuisine = it },
-                Modifier.fillMaxWidth(),
-                label = { Text("Cuisine") },
-                singleLine = true,
-                supportingText = { Text("Enter the  cuisine") }
-            )
+            item {
+
+                TextField(
+                    value = allergen,
+                    onValueChange = { allergen = it },
+                    Modifier.fillMaxWidth(),
+                    label = { Text("Allergen") },
+                    singleLine = true,
+                )
+            }
+
+            item {
+                TextField(
+                    value = cuisine,
+                    onValueChange = { cuisine = it },
+                    Modifier.fillMaxWidth(),
+                    label = { Text("Cuisine") },
+                    singleLine = true,
+                )
+            }
         }
 
         item {
@@ -260,13 +285,13 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
                     onClick = {
                         if (canUpload) {
 
-                            uploadRecipeImg(dish, imageUri!!, onUploadSuccess = { url ->
-                                uploadedImageUrl = url
-
-                            })
-
                             if (getCurrentUser() != null) {
-                                if (foodType) {
+                                if (selectedIndex == 0) {
+
+                                    uploadRecipeImg(dish, imageUri!!, onUploadSuccess = { url ->
+                                        uploadedImageUrl = url
+
+                                    })
 
                                     allergenList = allergen.split("[ ]*,[ ]*".toRegex())
                                     ingredientList = ingredients.split("[ ]*,[ ]*".toRegex())
@@ -300,6 +325,11 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
                                 }
 
                                 else {
+
+                                    uploadPurchaseImg(dish, imageUri!!, onUploadSuccess = { url ->
+                                        uploadedImageUrl = url
+
+                                    })
 
                                     writeUserPurchase(Purchases(
                                         dish,
@@ -342,8 +372,8 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
 
                 Button(
                     onClick = {
-                        DeleteDish(navController)
                         Toast.makeText(context, "Dish has been deleted!", Toast.LENGTH_SHORT).show()
+                        navController?.navigate("main")
                     },
 
                     ) {
@@ -354,10 +384,6 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
         }
     }
 }
-
-fun DeleteDish(navController: NavController?){
-    navController?.navigate("main")
-    }
 
 
 @Preview(showBackground = true)

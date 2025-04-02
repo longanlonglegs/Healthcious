@@ -1,5 +1,6 @@
 package com.pa1.logan.Healthcious.ui.composables.purchase
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,11 +34,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.pa1.logan.Healthcious.VM.Purchases
 import com.pa1.logan.Healthcious.database.showImg
+import com.pa1.logan.Healthcious.database.writeUserPurchase
+import com.pa1.logan.Healthcious.database.writeUserRecipe
 import com.pa1.logan.Healthcious.ui.composables.recipe.ItemScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Dish(navController: NavController?, purchases: Purchases) {
+
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -64,7 +70,23 @@ fun Dish(navController: NavController?, purchases: Purchases) {
             NavigationBar {
                 NavigationBarItem(
                     onClick = {
-                        TODO()
+                        writeUserPurchase(purchases,
+                            onResult = { success, message ->
+                                if (success) {
+                                    Toast.makeText(
+                                        context,
+                                        "Om Nom! Yummy in my tummy!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    navController?.navigate("purchase")
+                                } else Toast.makeText(
+                                    context,
+                                    message,
+                                    Toast.LENGTH_SHORT
+                                )
+                                    .show()
+                            }
+                        )
                     },
                     icon = { Icon(Icons.Default.ShoppingCart, "eat") },
                     selected = true,

@@ -23,10 +23,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Fastfood
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.RunningWithErrors
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -123,28 +127,28 @@ fun PurchasePage(navController: NavController?) {
                     onClick = {
                         navController?.navigate("main")
                     },
-                    icon = { Icon(Icons.Default.Lock, "Recipe")},
+                    icon = { Icon(Icons.Default.Book, "Recipe")},
                     selected = false,
                 )
                 NavigationBarItem(
                     onClick = {
                         navController?.navigate("purchase")
                     },
-                    icon = { Icon(Icons.Default.AccountBox, "Purchase")},
+                    icon = { Icon(Icons.Default.Storefront, "Purchase")},
                     selected = true,
                 )
                 NavigationBarItem(
                     onClick = {
                         navController?.navigate("health")
                     },
-                    icon = { Icon(Icons.Filled.Warning, "Health")},
+                    icon = { Icon(Icons.Filled.RunningWithErrors, "Health")},
                     selected = false,
                 )
                 NavigationBarItem(
                     onClick = {
                         navController?.navigate("shoppingcart")
                     },
-                    icon = { Icon(Icons.Filled.ShoppingCart, "Shopping Cart")},
+                    icon = { Icon(Icons.Filled.Fastfood, "Shopping Cart")},
                     selected = false,
                 )
             }

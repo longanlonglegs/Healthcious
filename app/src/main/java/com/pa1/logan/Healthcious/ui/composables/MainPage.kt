@@ -1,5 +1,6 @@
 package com.pa1.logan.Healthcious.ui.composables
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,10 +21,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Fastfood
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.RunningWithErrors
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -56,6 +62,7 @@ import androidx.navigation.NavController
 import com.example.compose.AppTheme
 import com.pa1.logan.Healthcious.R
 import com.pa1.logan.Healthcious.VM.Recipe
+import com.pa1.logan.Healthcious.database.signOut
 import com.pa1.logan.Healthcious.ui.composables.health.Health
 import com.pa1.logan.Healthcious.ui.composables.recipe.Recipe
 import com.pa1.logan.Healthcious.ui.composables.recipe.RecipeList
@@ -120,28 +127,28 @@ fun MainPage(navController: NavController?) {
                     onClick = {
                         navController?.navigate("main")
                     },
-                    icon = { Icon(Icons.Default.Lock, "Recipe")},
+                    icon = { Icon(Icons.Default.Book, "Recipe")},
                     selected = true,
                 )
                 NavigationBarItem(
                     onClick = {
                         navController?.navigate("purchase")
                     },
-                    icon = { Icon(Icons.Default.AccountBox, "Purchase")},
+                    icon = { Icon(Icons.Default.Storefront, "Purchase")},
                     selected = false,
                 )
                 NavigationBarItem(
                     onClick = {
                         navController?.navigate("health")
                     },
-                    icon = { Icon(Icons.Filled.Warning, "Health")},
+                    icon = { Icon(Icons.Default.RunningWithErrors, "Health")},
                     selected = false,
                 )
                 NavigationBarItem(
                     onClick = {
                         navController?.navigate("shoppingcart")
                     },
-                    icon = { Icon(Icons.Filled.ShoppingCart, "Shopping Cart")},
+                    icon = { Icon(Icons.Default.Fastfood, "Shopping Cart")},
                     selected = false,
                 )
             }
@@ -165,14 +172,18 @@ fun MinimalDropdownMenu(navController: NavController?) {
             onDismissRequest = { expanded = false }
         ) {
             DropdownMenuItem(
-                text = { Text("Custom Recipe") },
+                text = { Text("Settings") },
                 onClick = {
-
+                    TODO()
                 }
             )
             DropdownMenuItem(
-                text = { Text("Option 2") },
-                onClick = { /* Do something... */ }
+                text = { Text("Logout") },
+                onClick = {
+                    signOut()
+                    Toast.makeText(navController?.context, "Logged out", Toast.LENGTH_SHORT).show()
+                    navController?.navigate("signin")
+                }
             )
         }
     }

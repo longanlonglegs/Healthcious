@@ -16,7 +16,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.compose.AppTheme
 import com.google.firebase.appcheck.FirebaseAppCheck
-import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.gson.Gson
 import com.pa1.logan.Healthcious.VM.Purchases
 import com.pa1.logan.Healthcious.VM.Recipe
@@ -27,6 +26,7 @@ import com.pa1.logan.Healthcious.ui.composables.health.Health
 import com.pa1.logan.Healthcious.ui.composables.misc.Customize
 import com.pa1.logan.Healthcious.ui.composables.misc.Settings
 import com.pa1.logan.Healthcious.ui.composables.misc.ShoppingCart
+import com.pa1.logan.Healthcious.ui.composables.misc.SignInPage
 import com.pa1.logan.Healthcious.ui.composables.misc.SignUpPage
 import com.pa1.logan.Healthcious.ui.composables.onboarding.Onboarding
 import com.pa1.logan.Healthcious.ui.composables.purchase.Dish
@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainApp() {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "main") {
+    NavHost(navController = navController, startDestination = "signin") {
         composable("main") { MainPage(navController) }
         composable("onboarding") { Onboarding(navController) }
         composable("food/{recipe}",
@@ -77,10 +77,10 @@ fun MainApp() {
         }
         composable("settings") { Settings() }
         composable("customize") { Customize(navController) }
-        composable("recipe") { RecipeList(navController, PaddingValues(5.dp)) }
         composable("purchase") { PurchasePage(navController) }
         composable("health") { Health(navController) }
         composable("shoppingcart") { ShoppingCart(navController) }
+        composable("signin") { SignInPage(navController) }
         composable("signup") { SignUpPage(navController) }
 
     }

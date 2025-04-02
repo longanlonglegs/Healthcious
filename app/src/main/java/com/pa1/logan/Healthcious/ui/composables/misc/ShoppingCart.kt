@@ -1,5 +1,6 @@
 package com.pa1.logan.Healthcious.ui.composables.misc
 
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.layout.ContentScale
 import androidx.navigation.NavController
@@ -25,10 +26,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Fastfood
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.RunningWithErrors
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
@@ -59,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import com.example.compose.AppTheme
 import com.pa1.logan.Healthcious.R
 import com.pa1.logan.Healthcious.VM.Recipe
+import com.pa1.logan.Healthcious.database.getCurrentUser
 import com.pa1.logan.Healthcious.ui.composables.health.Health
 import com.pa1.logan.Healthcious.ui.composables.recipe.Recipe
 import com.pa1.logan.Healthcious.ui.composables.recipe.RecipeList
@@ -94,7 +100,10 @@ fun ShoppingCart(navController: NavController?) {
 
             actions = {
                 IconButton(
-                    onClick = {}
+                    onClick = {
+                        if (getCurrentUser() == null) navController?.navigate("signin")
+                        else Toast.makeText(navController?.context, "Already logged in", Toast.LENGTH_SHORT).show()
+                    }
                 ){
                     Icon(Icons.Default.AccountCircle, "menu")
                 }
@@ -119,9 +128,9 @@ fun ShoppingCart(navController: NavController?) {
             NavigationBar {
                 NavigationBarItem(
                     onClick = {
-                        navController?.navigate("menu")
+                        navController?.navigate("main")
                     },
-                    icon = { Icon(Icons.Default.Lock, "Recipe")},
+                    icon = { Icon(Icons.Default.Book, "Recipe")},
                     selected = false,
                     label = { Text("Recipe") }
                 )
@@ -129,7 +138,7 @@ fun ShoppingCart(navController: NavController?) {
                     onClick = {
                         navController?.navigate("purchase")
                     },
-                    icon = { Icon(Icons.Default.AccountBox, "Purchase")},
+                    icon = { Icon(Icons.Default.Storefront, "Purchase")},
                     selected = false,
                     label = { Text("Purchase") }
                 )
@@ -137,7 +146,7 @@ fun ShoppingCart(navController: NavController?) {
                     onClick = {
                         navController?.navigate("health")
                     },
-                    icon = { Icon(Icons.Filled.Warning, "Health")},
+                    icon = { Icon(Icons.Filled.RunningWithErrors, "Health")},
                     selected = false,
                     label = { Text("Health") }
                 )
@@ -145,7 +154,7 @@ fun ShoppingCart(navController: NavController?) {
                     onClick = {
                         navController?.navigate("shoppingcart")
                     },
-                    icon = { Icon(Icons.Filled.ShoppingCart, "Shopping Cart")},
+                    icon = { Icon(Icons.Filled.Fastfood, "Shopping Cart")},
                     selected = true,
                     label = { Text("Eaten Food") }
                 )
@@ -171,7 +180,7 @@ fun MyCart(navController: NavController?, paddingValues: PaddingValues) {
                     Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
 
                         Image(
-                            painter = showImg("images/${cartItem.name}.png"), "cart item",
+                            painter = showImg("images/${cartItem.type}/${cartItem.name}.png"), "cart item",
                             modifier = Modifier.size(100.dp),
                             contentScale = ContentScale.Crop,
                             )

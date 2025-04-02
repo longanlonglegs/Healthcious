@@ -42,6 +42,7 @@ fun RecipeList(navController: NavController?, paddingValues: PaddingValues) {
 
 
     LaunchedEffect(Unit) {
+
         fetchRecipes(
             onDataReceived = {
                 recipeVM.recipeList.value = it
@@ -49,7 +50,8 @@ fun RecipeList(navController: NavController?, paddingValues: PaddingValues) {
                              },
             onFailure = { }
         )
-        if (getCurrentUser() != null)fetchUserRecipes(
+
+        fetchUserRecipes(
             onDataReceived = {
                 recipeVM.recipeList.value = it + recipeVM.recipeList.value
                 Log.d("RecipeList", "Fetched ${it.size} recipes")
