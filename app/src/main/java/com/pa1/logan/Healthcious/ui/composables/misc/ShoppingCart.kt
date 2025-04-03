@@ -1,5 +1,6 @@
 package com.pa1.logan.Healthcious.ui.composables.misc
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.layout.ContentScale
@@ -8,6 +9,7 @@ import com.pa1.logan.Healthcious.VM.ShoppingCartVM
 import com.pa1.logan.Healthcious.database.showImg
 import com.pa1.logan.Healthcious.ui.composables.MinimalDropdownMenu
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,6 +51,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,8 +65,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.compose.AppTheme
+import com.google.gson.Gson
 import com.pa1.logan.Healthcious.R
 import com.pa1.logan.Healthcious.VM.Recipe
+import com.pa1.logan.Healthcious.database.fetchPurchases
+import com.pa1.logan.Healthcious.database.fetchUserEatenFood
+import com.pa1.logan.Healthcious.database.fetchUserPurchases
 import com.pa1.logan.Healthcious.database.getCurrentUser
 import com.pa1.logan.Healthcious.ui.composables.health.Health
 import com.pa1.logan.Healthcious.ui.composables.recipe.Recipe
@@ -167,20 +174,49 @@ fun ShoppingCart(navController: NavController?) {
 @Composable
 fun MyCart(navController: NavController?, paddingValues: PaddingValues) {
 
-    val cartVM = ShoppingCartVM()
+    val cartVM = remember { ShoppingCartVM() }
+    var type by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        if (getCurrentUser() != null) fetchUserEatenFood(
+            onDataReceived = {
+                cartVM.shoppingCartList.value = it
+                Log.d("Eaten Food list", "Fetched ${it.size} Eaten Food")
+            },
+            onFailure = { }
+        )
+    }
 
     LazyColumn(Modifier
         .fillMaxSize()
         .padding(paddingValues), horizontalAlignment = Alignment.CenterHorizontally){
-        for (cartItem in cartVM.shoppingCartList) {
+        for (cartItem in cartVM.shoppingCartList.value) {
             item {
                 Card(modifier = Modifier
                     .fillMaxSize()
-                    .padding(5.dp)) {
+                    .padding(5.dp)
+                    .clickable {
+                        if (cartItem.recipes != null) {
+                            val jsonRecipe = Gson().toJson(cartItem.recipes)
+                            val encodedRecipe = URLEncoder.encode(jsonRecipe, StandardCharsets.UTF_8.toString())
+
+                            navController?.navigate("food/$encodedRecipe")
+                        }
+
+                        else {
+                            val jsonPurchase = Gson().toJson(cartItem.purchases)
+                            val encodedPurchase = URLEncoder.encode(jsonPurchase, StandardCharsets.UTF_8.toString())
+
+                            navController?.navigate("dish/$encodedPurchase")
+                        }
+                    }
+                ) {
                     Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
 
+                        type = if (cartItem.recipes != null) "recipes" else "purchases"
+
                         Image(
-                            painter = showImg("images/${cartItem.type}/${cartItem.name}.png"), "cart item",
+                            painter = showImg("images/${type}/${cartItem.name}.png"), "cart item",
                             modifier = Modifier.size(100.dp),
                             contentScale = ContentScale.Crop,
                             )
@@ -188,6 +224,7 @@ fun MyCart(navController: NavController?, paddingValues: PaddingValues) {
                         Column (verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.padding(5.dp)){
                             Text(cartItem.name, fontWeight = FontWeight.Bold)
                             Text("${cartItem.calories.toInt()}kcal")
+                            Text("Quantity: ${cartItem.quantity}")
                         }
                     }
                 }

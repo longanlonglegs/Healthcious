@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +35,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -48,7 +50,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -71,124 +75,127 @@ fun SignInPage(navController: NavController?) {
     val password = remember { TextFieldState() }
     var showPassword by remember { mutableStateOf(false) }
 
-    Column(
-        Modifier
-            .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(20.dp)
-    ) {
+    Surface(modifier = Modifier.fillMaxSize()){
 
-        Spacer(modifier = Modifier.height(50.dp))
+        Column(
+            Modifier
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
+        ) {
 
-        Image(
-            painter = painterResource(R.drawable.logo),
-            "",
-            modifier = Modifier.height(200.dp),
-            contentScale = ContentScale.Crop
-        )
 
-        Spacer(modifier = Modifier.height(50.dp))
+            Text("Welcome Back", fontSize = 40.sp,  fontWeight = FontWeight.Bold, modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp), textAlign = TextAlign.Center)
+            Text("Login to your account", modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp), textAlign = TextAlign.Center)
 
-        BasicTextField(
-            state = email,
-            lineLimits = TextFieldLineLimits.SingleLine,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(6.dp)
-                .border(1.dp, Color.LightGray, RoundedCornerShape(6.dp))
-                .padding(6.dp)
-                .height(40.dp),
-            decorator = { innerTextField ->
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .padding(start = 48.dp, end = 48.dp)
-                    ) {
-                        innerTextField()
+            Spacer(modifier = Modifier.height(10.dp))
+
+            BasicTextField(
+                state = email,
+                lineLimits = TextFieldLineLimits.SingleLine,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .border(1.dp, Color.LightGray, RoundedCornerShape(6.dp))
+                    .padding(6.dp)
+                    .height(40.dp)
+                    .background(MaterialTheme.colorScheme.inverseOnSurface),
+                decorator = { innerTextField ->
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .padding(start = 48.dp, end = 48.dp)
+                        ) {
+                            innerTextField()
+                        }
+
+                        Icon(
+                            Icons.Filled.Email,
+                            contentDescription = "Password",
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .requiredSize(48.dp).padding(16.dp)
+                        )
                     }
-
-                    Icon(
-                        Icons.Filled.Email,
-                        contentDescription = "Password",
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .requiredSize(48.dp).padding(16.dp)
-                    )
                 }
-            }
-        )
-
-        BasicSecureTextField(
-            state = password,
-            textObfuscationMode =
-            if (showPassword) {
-                TextObfuscationMode.Visible
-            } else {
-                TextObfuscationMode.RevealLastTyped
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(6.dp)
-                .border(1.dp, Color.LightGray, RoundedCornerShape(6.dp))
-                .padding(6.dp)
-                .height(40.dp),
-            decorator = { innerTextField ->
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .padding(start = 48.dp, end = 48.dp)
-                    ) {
-                        innerTextField()
-                    }
-                    Icon(
-                        if (showPassword) {
-                            Icons.Filled.Visibility
-                        } else {
-                            Icons.Filled.VisibilityOff
-                        },
-                        contentDescription = "Toggle password visibility",
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .requiredSize(48.dp).padding(16.dp)
-                            .clickable { showPassword = !showPassword }
-                    )
-                    Icon(
-                        Icons.Filled.Key,
-                        contentDescription = "Password",
-                        modifier = Modifier
-                            .align(Alignment.CenterStart)
-                            .requiredSize(48.dp).padding(16.dp)
-                    )
-                }
-            }
-        )
-
-
-        Button(onClick = {
-            signInWithEmail(email.text.toString(), password.text.toString(), { success, message ->
-                Log.d("FirebaseAuth", message ?: "Unknown error")
-                if (!success) Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                else {
-                    Toast.makeText(context, "Signed In!", Toast.LENGTH_SHORT).show()
-                    navController?.navigate("main")
-                }
-            }
             )
 
-        }) {
-            Text("Sign In")
-        }
-
-        Text("New User? Click here to sign up!",
-            color = Color.Blue,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.clickable(
-                onClick = {
-                    navController?.navigate("signup")
+            BasicSecureTextField(
+                state = password,
+                textObfuscationMode =
+                if (showPassword) {
+                    TextObfuscationMode.Visible
+                } else {
+                    TextObfuscationMode.RevealLastTyped
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .border(1.dp, Color.LightGray, RoundedCornerShape(6.dp))
+                    .padding(6.dp)
+                    .height(40.dp)
+                    .background(MaterialTheme.colorScheme.inverseOnSurface),
+                decorator = { innerTextField ->
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .padding(start = 48.dp, end = 48.dp)
+                        ) {
+                            innerTextField()
+                        }
+                        Icon(
+                            if (showPassword) {
+                                Icons.Filled.Visibility
+                            } else {
+                                Icons.Filled.VisibilityOff
+                            },
+                            contentDescription = "Toggle password visibility",
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .requiredSize(48.dp).padding(16.dp)
+                                .clickable { showPassword = !showPassword }
+                        )
+                        Icon(
+                            Icons.Filled.Key,
+                            contentDescription = "Password",
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .requiredSize(48.dp).padding(16.dp)
+                        )
+                    }
                 }
-            ))
+            )
+
+
+            Button(onClick = {
+                signInWithEmail(
+                    email.text.toString(),
+                    password.text.toString(),
+                    { success, message ->
+                        Log.d("FirebaseAuth", message ?: "Unknown error")
+                        if (!success) Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                        else {
+                            Toast.makeText(context, "Signed In!", Toast.LENGTH_SHORT).show()
+                            navController?.navigate("main")
+                        }
+                    }
+                )
+
+            }) {
+                Text("Sign In")
+            }
+
+            Text("New User? Click here to sign up!",
+                color = Color.Magenta,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.clickable(
+                    onClick = {
+                        navController?.navigate("signup")
+                    }
+                ))
+        }
     }
 }
 
@@ -209,12 +216,7 @@ fun SignUpPage(navController: NavController?) {
 
         Spacer(modifier = Modifier.height(50.dp))
 
-        Image(
-            painter = painterResource(R.drawable.logo),
-            "",
-            modifier = Modifier.height(200.dp),
-            contentScale = ContentScale.Crop
-        )
+        Text("Hi there", fontSize = 100.sp)
 
         Spacer(modifier = Modifier.height(20.dp))
 

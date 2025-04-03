@@ -29,6 +29,7 @@ import com.google.firebase.database.getValue
 import com.pa1.logan.Healthcious.VM.Purchases
 import com.pa1.logan.Healthcious.VM.Recipe
 import com.pa1.logan.Healthcious.VM.RecipeVM
+import com.pa1.logan.Healthcious.VM.shoppingCartItem
 
 fun writeRecipe(recipe: Recipe) {
 
@@ -128,8 +129,15 @@ fun writeUserPurchase(purchases: Purchases, onResult: (Boolean, String?) -> Unit
 
     val user = getCurrentUser()
 
-    if (user != null ) ref.child(user.email.toString().substringBefore("@")).child("purchases").child(purchases.name).setValue(purchases)
-    else Log.d("writing purchases error", "error with writing purchases")
+    if (user != null ) {
+        ref.child(user.email.toString().substringBefore("@")).child("purchases")
+            .child(purchases.name).setValue(purchases)
+        onResult(true, "IT WORKS")
+    }
+
+    else {
+        onResult(false, "error with writing purchase")
+    }
 }
 
 fun fetchUserPurchases(onDataReceived: (List<Purchases>) -> Unit, onFailure: (Exception) -> Unit) {
@@ -156,36 +164,43 @@ fun fetchUserPurchases(onDataReceived: (List<Purchases>) -> Unit, onFailure: (Ex
     })
 }
 
-//@Composable
-//fun RecipeListScreen() {
-//    var recipes by remember { mutableStateOf(RecipeVM().recipeList) }
-//
-//    LaunchedEffect(Unit) {
-//        fetchRecipes(
-//            onDataReceived = { recipes = it.toMutableList() },
-//            onFailure = { }
-//        )
-//    }
-//
-//    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-//
-//        if (recipes.isEmpty()) {
-//            Text("Loading recipes...", style = MaterialTheme.typography.bodyLarge)
-//        } else {
-//            LazyColumn {
-//                items(recipes) { recipe ->
-//                    Card(
-//                        modifier = Modifier.fillMaxWidth().padding(8.dp),
-//                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-//                    ) {
-//                        Column(modifier = Modifier.padding(16.dp)) {
-//                            Text(recipe.name, style = MaterialTheme.typography.titleMedium)
-//                            Text("Price: $${recipe.ingredients}", style = MaterialTheme.typography.bodyLarge)
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
+fun writeUserEatenFood(shoppingCartItem: shoppingCartItem, onResult: (Boolean, String?) -> Unit) {
 
+    val ref = Firebase.database.reference
+
+    val user = getCurrentUser()
+
+    if (user != null ) {
+        ref.child(user.email.toString().substringBefore("@")).child("eaten food")
+            .child(shoppingCartItem.name).setValue(shoppingCartItem)
+        onResult(true, "IT WORKS")
+    }
+    else {
+        Log.d("writing purchases error", "error with writing purchases")
+        onResult(false, "error with writing purchases")
+    }
+}
+
+fun fetchUserEatenFood(onDataReceived: (List<shoppingCartItem>) -> Unit, onFailure: (Exception) -> Unit) {
+    val database = FirebaseDatabase.getInstance()
+    val user = getCurrentUser()
+    var ref = database.getReference("purchases")
+
+    if (user != null) ref = database.getReference("${user.email.toString().substringBefore("@")}/eaten food") // Points to recipes node in Firebase
+
+    ref.addValueEventListener(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            val eatenFoodList = mutableListOf<shoppingCartItem>()
+            for (eatenFoodSnapshot in snapshot.children) {
+                val eatenFood = eatenFoodSnapshot.getValue(shoppingCartItem::class.java)
+                eatenFood?.let { eatenFoodList.add(it) }
+            }
+            onDataReceived(eatenFoodList)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("Firebase", "Error fetching data: ${error.message}")
+            onFailure(error.toException())
+        }
+    })
+}

@@ -2,6 +2,7 @@ package com.pa1.logan.Healthcious.ui.composables.health
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,7 +30,7 @@ import com.pa1.logan.Healthcious.VM.HealthVM
 import com.pa1.logan.Healthcious.ui.composables.misc.StarRatingBar
 
 @Composable
-fun Health (navController: NavController?){
+fun Health (navController: NavController?, paddingValues: PaddingValues){
 
     var healthVM = HealthVM()
 
@@ -36,18 +38,42 @@ fun Health (navController: NavController?){
     var salt by remember { mutableStateOf(healthVM.totalSalt) }
     var caloricIntake by remember { mutableStateOf(healthVM.totalCalories) }
     var healthStars by remember { mutableStateOf(5f) }
+    var currentCalories by remember{ mutableStateOf(0f)}
 
     Column (
         Modifier
             .fillMaxSize()
-            .padding(10.dp),
+            .padding(paddingValues),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(20.dp)) {
 
-        ProgressCircle(caloricIntake, 300, 20)
+        Card(modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp)){
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                ProgressCircle(caloricIntake, 200, 20)
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(5.dp), horizontalAlignment = Alignment.Start, verticalArrangement = Arrangement.Center) {
+                    Text(
+                        "Total Calorie",
+                        textAlign = TextAlign.Start,
+                        fontSize = 25.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "${currentCalories}/${ healthVM.totalCalories }",
+                        textAlign = TextAlign.Start,
+                        fontSize = 25.sp,
+                    )
+                }
+            }
+        }
 
         Card (
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(5.dp)
         ){
             Row(Modifier
                 .fillMaxWidth()
@@ -70,7 +96,7 @@ fun Health (navController: NavController?){
         }
 
         Card (
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(5.dp)
         ){
             Row(Modifier
                 .fillMaxWidth()
@@ -83,7 +109,7 @@ fun Health (navController: NavController?){
         }
 
         Card(
-            modifier = Modifier.fillMaxWidth())
+            modifier = Modifier.fillMaxWidth().padding(5.dp))
         {
             Row (Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center){
                 StarRatingBar(
@@ -95,7 +121,7 @@ fun Health (navController: NavController?){
         }
 
         Card(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize().padding(5.dp)
         ) {
             Text("graph")
         }
@@ -107,7 +133,9 @@ fun Health (navController: NavController?){
 fun ProgressCircle(progress: Float, size: Int, width: Int) {
     CircularProgressIndicator(
         progress = {progress},
-        modifier = Modifier.size(size.dp),
+        modifier = Modifier
+            .size(size.dp)
+            .padding(10.dp),
         strokeWidth = width.dp,
         trackColor = Color.Magenta,
     )
@@ -117,6 +145,6 @@ fun ProgressCircle(progress: Float, size: Int, width: Int) {
 @Composable
 fun HealthPreview() {
     AppTheme {
-        Health(navController = null)
+        Health(navController = null, paddingValues = PaddingValues(0.dp))
     }
 }

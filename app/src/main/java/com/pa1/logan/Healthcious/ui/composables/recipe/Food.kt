@@ -48,7 +48,9 @@ import com.example.compose.AppTheme
 import com.pa1.logan.Healthcious.R
 import com.pa1.logan.Healthcious.VM.Purchases
 import com.pa1.logan.Healthcious.VM.Recipe
+import com.pa1.logan.Healthcious.VM.shoppingCartItem
 import com.pa1.logan.Healthcious.database.showImg
+import com.pa1.logan.Healthcious.database.writeUserEatenFood
 import com.pa1.logan.Healthcious.database.writeUserRecipe
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,7 +85,14 @@ fun Food(navController: NavController?, recipe: Recipe) {
             NavigationBar {
                 NavigationBarItem(
                     onClick = {
-                        writeUserRecipe(recipe,
+                        writeUserEatenFood(
+                            shoppingCartItem(
+                                recipe.name,
+                                recipe.calories,
+                                recipe.salt,
+                                recipe.sugar,
+                                recipes = recipe
+                            ),
                             onResult = { success, message ->
                                 if (success) {
                                     Toast.makeText(

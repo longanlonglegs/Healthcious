@@ -56,12 +56,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.compose.AppTheme
 import com.pa1.logan.Healthcious.R
 import com.pa1.logan.Healthcious.VM.Recipe
+import com.pa1.logan.Healthcious.database.getCurrentUser
 import com.pa1.logan.Healthcious.database.signOut
 import com.pa1.logan.Healthcious.ui.composables.health.Health
 import com.pa1.logan.Healthcious.ui.composables.recipe.Recipe
@@ -77,16 +80,20 @@ fun MainPage(navController: NavController?) {
     Scaffold(
         topBar = { TopAppBar(
             title = {
-                Row (
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ){
-                    Image(painter = painterResource(R.drawable.logo_withoutword),
-                        "title",
-                        modifier = Modifier.size(80.dp))
+
+                Column(Modifier.fillMaxWidth()) {
+
                     Text(
-                        "Healthcious",
+                        "Hi ${getCurrentUser()?.email.toString().substringBefore("@")} !",
                         modifier = Modifier.fillMaxWidth(),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+
+                    Text(
+                        "Stay healthy with these recipes",
+                        modifier = Modifier.fillMaxWidth(),
+                        fontWeight = FontWeight.ExtraBold
                     )
                 }
                 
