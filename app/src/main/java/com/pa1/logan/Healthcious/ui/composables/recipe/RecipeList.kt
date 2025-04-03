@@ -22,8 +22,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.compose.AppTheme
 import com.pa1.logan.Healthcious.VM.Recipe
@@ -66,6 +68,15 @@ fun RecipeList(navController: NavController?, paddingValues: PaddingValues) {
             .padding(paddingValues)
     )
     {
+
+        Text(
+            "Stay healthy with these recipes",
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp).padding(bottom = 5.dp),
+            fontWeight = FontWeight.ExtraBold,
+            fontSize = 25.sp,
+            lineHeight = 30.sp
+        )
+
         Searchbar(search)
 
         LazyVerticalGrid(

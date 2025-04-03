@@ -56,9 +56,9 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(platform("com.google.firebase:firebase-bom:33.11.0"))
     // No need to use the KTX libraries, everything is now in the main module
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-firestore")
-    implementation("com.google.firebase:firebase-database")
+    implementation(libs.firebase.auth)
+    implementation(libs.google.firebase.firestore)
+    implementation(libs.firebase.database)
     implementation(libs.firebase.storage.ktx)
     implementation(libs.firebase.database.ktx)
     implementation(libs.firebase.appcheck.playintegrity)
@@ -71,6 +71,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation (libs.coil.compose)
     implementation( libs.gson)
-    implementation ("androidx.compose.material:material-icons-extended")
+    implementation (libs.androidx.material.icons.extended)
+    implementation("com.github.jaikeerthick:Composable-Graphs:v1.2.3")
 
 }

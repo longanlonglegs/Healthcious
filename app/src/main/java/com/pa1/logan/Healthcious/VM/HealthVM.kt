@@ -7,3 +7,9 @@ class HealthVM {
     var totalSalt = 0f
 
 }
+
+data class Goals(
+    val targetCalories: Float = 2000f,
+    val targetSugar: Float = 30f,
+    val targetSalt: Float = 2000f,
+)

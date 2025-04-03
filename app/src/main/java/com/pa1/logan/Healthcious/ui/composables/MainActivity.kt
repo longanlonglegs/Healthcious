@@ -17,11 +17,13 @@ import androidx.navigation.navArgument
 import com.example.compose.AppTheme
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.gson.Gson
+import com.pa1.logan.Healthcious.VM.Goals
 import com.pa1.logan.Healthcious.VM.Purchases
 import com.pa1.logan.Healthcious.VM.Recipe
 import com.pa1.logan.Healthcious.database.showImg
 import com.pa1.logan.Healthcious.database.writePurchase
 import com.pa1.logan.Healthcious.database.writeRecipe
+import com.pa1.logan.Healthcious.database.writeUserGoals
 import com.pa1.logan.Healthcious.ui.composables.health.Health
 import com.pa1.logan.Healthcious.ui.composables.health.HealthPage
 import com.pa1.logan.Healthcious.ui.composables.misc.Customize

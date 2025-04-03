@@ -37,17 +37,10 @@ fun HealthPage(navController: NavController?) {
     Scaffold(
         topBar = { TopAppBar(
             title = {
-
-                Column(Modifier.fillMaxWidth()) {
-
                     Text(
                         "Health Progress",
                         modifier = Modifier.fillMaxWidth(),
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.SemiBold
                     )
-                }
-
             },
 
             navigationIcon = {
@@ -71,15 +64,6 @@ fun HealthPage(navController: NavController?) {
             Health(navController, paddingValues)
         },
 
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    navController?.navigate("customize")
-                }
-            ) {
-                Icon(Icons.Default.Add, "Add own dish")
-            }
-        },
         bottomBar = {
             NavigationBar (modifier = Modifier.height(80.dp), containerColor = Color.Transparent){
                 NavigationBarItem(
@@ -87,7 +71,7 @@ fun HealthPage(navController: NavController?) {
                         navController?.navigate("main")
                     },
                     icon = { Icon(Icons.Default.Book, "Recipe") },
-                    selected = true,
+                    selected = false,
                 )
                 NavigationBarItem(
                     onClick = {
@@ -101,7 +85,7 @@ fun HealthPage(navController: NavController?) {
                         navController?.navigate("health")
                     },
                     icon = { Icon(Icons.Default.RunningWithErrors, "Health") },
-                    selected = false,
+                    selected = true,
                 )
                 NavigationBarItem(
                     onClick = {

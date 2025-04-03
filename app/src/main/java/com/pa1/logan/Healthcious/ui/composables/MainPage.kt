@@ -81,29 +81,15 @@ fun MainPage(navController: NavController?) {
         topBar = { TopAppBar(
             title = {
 
-                Column(Modifier.fillMaxWidth()) {
-
                     Text(
-                        "Hi ${getCurrentUser()?.email.toString().substringBefore("@")} !",
+                        "Hi ${getCurrentUser()?.email.toString().substringBefore("@")}!",
                         modifier = Modifier.fillMaxWidth(),
-                        fontSize = 10.sp,
                         fontWeight = FontWeight.SemiBold
                     )
-
-                    Text(
-                        "Stay healthy with these recipes",
-                        modifier = Modifier.fillMaxWidth(),
-                        fontWeight = FontWeight.ExtraBold
-                    )
-                }
                 
                     },
 
             navigationIcon = {
-                MinimalDropdownMenu(navController)
-            },
-
-            actions = {
                 IconButton(
                     onClick = {
                         navController?.navigate("signup")
@@ -111,6 +97,10 @@ fun MainPage(navController: NavController?) {
                 ){
                     Icon(Icons.Default.AccountCircle, "sign up")
                 }
+            },
+
+            actions = {
+                MinimalDropdownMenu(navController)
             }
         )},
 

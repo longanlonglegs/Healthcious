@@ -26,6 +26,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.firebase.database.getValue
+import com.pa1.logan.Healthcious.VM.Goals
 import com.pa1.logan.Healthcious.VM.Purchases
 import com.pa1.logan.Healthcious.VM.Recipe
 import com.pa1.logan.Healthcious.VM.RecipeVM
@@ -196,6 +197,47 @@ fun fetchUserEatenFood(onDataReceived: (List<shoppingCartItem>) -> Unit, onFailu
                 eatenFood?.let { eatenFoodList.add(it) }
             }
             onDataReceived(eatenFoodList)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("Firebase", "Error fetching data: ${error.message}")
+            onFailure(error.toException())
+        }
+    })
+}
+
+fun writeUserGoals(goals: Goals, onResult: (Boolean, String?) -> Unit) {
+
+    val ref = Firebase.database.reference
+
+    val user = getCurrentUser()
+
+    if (user != null ) {
+        ref.child(user.email.toString().substringBefore("@")).child("goals").setValue(goals)
+        onResult(true, "IT WORKS")
+    }
+    else onResult(false, "error with writing goals")
+}
+
+fun fetchUserGoals(onDataReceived: (Goals) -> Unit, onFailure: (Exception) -> Unit) {
+    val database = FirebaseDatabase.getInstance()
+    val user = getCurrentUser()
+    var ref = database.getReference("goals")
+
+    if (user != null) ref = database.getReference(user.email.toString().substringBefore("@")) // Points to recipes node in Firebase
+
+    ref.addValueEventListener(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            var goal = Goals()
+            for (goalSnapShot in snapshot.children) {
+                val userGoal = goalSnapShot.getValue(Goals::class.java)
+                userGoal.let {
+                    if (it != null) {
+                        goal = it
+                    }
+                }
+            }
+            onDataReceived(goal)
         }
 
         override fun onCancelled(error: DatabaseError) {
