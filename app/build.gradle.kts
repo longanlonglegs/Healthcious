@@ -73,5 +73,6 @@ dependencies {
     implementation( libs.gson)
     implementation (libs.androidx.material.icons.extended)
     implementation("com.github.jaikeerthick:Composable-Graphs:v1.2.3")
+    implementation ("androidx.work:work-runtime-ktx:2.7.1")
 
 }

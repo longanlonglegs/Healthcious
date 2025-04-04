@@ -1,38 +1,26 @@
 package com.pa1.logan.Healthcious.ui.composables.health
 
-import androidx.compose.ui.graphics.Path
-import android.graphics.PointF
 import android.util.Log
-import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Face
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -49,9 +37,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -59,57 +46,82 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import com.example.compose.AppTheme
+import com.google.firebase.database.FirebaseDatabase
 import com.jaikeerthick.composable_graphs.composables.line.LineGraph
 import com.jaikeerthick.composable_graphs.composables.line.model.LineData
 import com.pa1.logan.Healthcious.R
 import com.pa1.logan.Healthcious.VM.Goals
-import com.pa1.logan.Healthcious.VM.HealthVM
 import com.pa1.logan.Healthcious.VM.ShoppingCartVM
-import com.pa1.logan.Healthcious.database.fetchPurchases
+import com.pa1.logan.Healthcious.VM.Streak
+import com.pa1.logan.Healthcious.database.StreakWorker
 import com.pa1.logan.Healthcious.database.fetchUserEatenFood
 import com.pa1.logan.Healthcious.database.fetchUserGoals
-import com.pa1.logan.Healthcious.database.fetchUserPurchases
+import com.pa1.logan.Healthcious.database.fetchUserStreak
 import com.pa1.logan.Healthcious.database.getCurrentUser
 import com.pa1.logan.Healthcious.ui.composables.misc.StarRatingBar
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
+import kotlinx.coroutines.tasks.await
+import java.util.concurrent.TimeUnit
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Health (navController: NavController?, paddingValues: PaddingValues) {
 
     var goal by remember { mutableStateOf(Goals()) }
     val cartVM = remember { ShoppingCartVM() }
+    var streak by remember { mutableStateOf(Streak()) }
+
+    val context = LocalContext.current
 
     var healthStars by remember { mutableFloatStateOf(5f) }
     var currentCalories by remember { mutableFloatStateOf(0f) }
     var currentSugar by remember { mutableFloatStateOf(0f) }
     var currentSalt by remember { mutableFloatStateOf(0f) }
+    var progress by remember { mutableFloatStateOf(currentCalories / goal.targetCalories) }
 
     val data = listOf(LineData(x = "Sun", y = 200), LineData(x = "Mon", y = 40))
 
     LaunchedEffect(Unit) {
-        if (getCurrentUser() != null) fetchUserGoals(
-            onDataReceived = {
-                goal = it
-                Log.d("User Goal", "Fetched $goal goal!")
-            },
-            onFailure = { }
-        )
+        if (getCurrentUser() != null) {
+            fetchUserGoals(
+                onDataReceived = {
+                    goal = it
+                    Log.d("User Goal", "Fetched $goal goal!")
+                },
+                onFailure = { }
+            )
 
-        if (getCurrentUser() != null) fetchUserEatenFood(
-            onDataReceived = {
-                cartVM.shoppingCartList.value = it
-                Log.d("Eaten Food list", "Fetched $it Eaten Food")
+            fetchUserEatenFood(
+                onDataReceived = {
+                    cartVM.shoppingCartList.value = it
+                    Log.d("Eaten Food list", "Fetched $it Eaten Food")
 
-                for (item in cartVM.shoppingCartList.value) {
-                    currentCalories += item.calories * item.quantity
-                    currentSugar += item.sugar * item.quantity
-                    currentSalt += item.salt * item.quantity
-                }
-            },
-            onFailure = { }
-        )
+                    for (item in cartVM.shoppingCartList.value) {
+                        currentCalories += item.calories * item.quantity
+                        currentSugar += item.sugar * item.quantity
+                        currentSalt += item.salt * item.quantity
+                    }
+                },
+                onFailure = { }
+            )
+
+            fetchUserStreak(
+                onDataReceived = {
+                    streak = it
+                    Log.d("User Streak", "Fetched $streak streak!")
+                },
+                onFailure = { }
+            )
+        }
 
         Log.d("Health", cartVM.shoppingCartList.value.toString())
 
@@ -160,31 +172,40 @@ fun Health (navController: NavController?, paddingValues: PaddingValues) {
                         }
 
                         Text(
-                            "Best Streak: XX Days",
+                            "Best Streak: ${streak.highestStreak}",
                             modifier = Modifier,
                             color = MaterialTheme.colorScheme.secondary
                         )
                     }
                     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                        Image(
-                            painter = painterResource(R.drawable.orange_fire), "streak",
+
+                        if (goal.streak < 3) Image(
+                                painter = painterResource(R.drawable.orange_fire), "streak",
+                                modifier = Modifier.size(100.dp)
+                            )
+                        else Image(
+                            painter = painterResource(R.drawable.blue_fire), "streak",
                             modifier = Modifier.size(100.dp)
                         )
-                        Text(
-                            "1 Day",
-                            fontSize = 25.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = Color.White
-                        )
+                            Text(
+                                "${streak.currentStreak} days",
+                                fontSize = 25.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color.White
+                            )
                     }
                 }
             }
         }
 
-        item {
-
-            Text("Progress", modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
+        stickyHeader {
+            Text("Progress", modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 15.dp),
                 textAlign = TextAlign.Start, fontWeight = FontWeight.Bold)
+        }
+
+        item {
 
             Card(
                 modifier = Modifier
@@ -255,11 +276,14 @@ fun Health (navController: NavController?, paddingValues: PaddingValues) {
             }
         }
 
+        stickyHeader {
+            Text("Health Statistics", modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 15.dp),
+                textAlign = TextAlign.Start, fontWeight = FontWeight.Bold)
+        }
 
         item {
-
-            Text("Health Statistics", modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp),
-                textAlign = TextAlign.Start, fontWeight = FontWeight.Bold)
 
             Card(
                 modifier = Modifier
@@ -278,8 +302,15 @@ fun Health (navController: NavController?, paddingValues: PaddingValues) {
                     verticalAlignment = Alignment.CenterVertically
                 )
                 {
-
-                    ProgressCircle(currentCalories / goal.targetCalories, 100, 10)
+                    CircularProgressIndicator(
+                        progress = {progress},
+                        modifier = Modifier
+                            .size(100.dp)
+                            .padding(10.dp),
+                        strokeWidth = 10.dp,
+                        trackColor = MaterialTheme.colorScheme.secondaryContainer,
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
 
                     Column(
                         modifier = Modifier
@@ -445,18 +476,6 @@ fun Health (navController: NavController?, paddingValues: PaddingValues) {
 
         }
     }
-}
-
-@Composable
-fun ProgressCircle(progress: Float, size: Int, width: Int) {
-    CircularProgressIndicator(
-        progress = {progress},
-        modifier = Modifier
-            .size(size.dp)
-            .padding(10.dp),
-        strokeWidth = width.dp,
-        trackColor = MaterialTheme.colorScheme.secondary,
-    )
 }
 
 @Preview(showBackground = true)

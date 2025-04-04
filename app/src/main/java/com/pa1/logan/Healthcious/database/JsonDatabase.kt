@@ -30,6 +30,7 @@ import com.pa1.logan.Healthcious.VM.Goals
 import com.pa1.logan.Healthcious.VM.Purchases
 import com.pa1.logan.Healthcious.VM.Recipe
 import com.pa1.logan.Healthcious.VM.RecipeVM
+import com.pa1.logan.Healthcious.VM.Streak
 import com.pa1.logan.Healthcious.VM.shoppingCartItem
 
 fun writeRecipe(recipe: Recipe) {
@@ -182,6 +183,23 @@ fun writeUserEatenFood(shoppingCartItem: shoppingCartItem, onResult: (Boolean, S
     }
 }
 
+fun deleteUserEatenFood(onResult: (Boolean, String?) -> Unit) {
+
+    val ref = Firebase.database.reference
+
+    val user = getCurrentUser()
+
+    if (user != null ) {
+        ref.child(user.email.toString().substringBefore("@")).child("eaten food")
+            .removeValue()
+        onResult(true, "IT WORKS")
+    }
+    else {
+        Log.d("writing user eaten food", "error with deleting eaten food")
+        onResult(false, "error with deleting eaten food")
+    }
+}
+
 fun fetchUserEatenFood(onDataReceived: (List<shoppingCartItem>) -> Unit, onFailure: (Exception) -> Unit) {
     val database = FirebaseDatabase.getInstance()
     val user = getCurrentUser()
@@ -238,6 +256,47 @@ fun fetchUserGoals(onDataReceived: (Goals) -> Unit, onFailure: (Exception) -> Un
                 }
             }
             onDataReceived(goal)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("Firebase", "Error fetching data: ${error.message}")
+            onFailure(error.toException())
+        }
+    })
+}
+
+fun writeUserStreak(streak: Streak, onResult: (Boolean, String?) -> Unit) {
+
+    val ref = Firebase.database.reference
+
+    val user = getCurrentUser()
+
+    if (user != null ) {
+        ref.child(user.email.toString().substringBefore("@")).child("streak").setValue(streak)
+        onResult(true, "IT WORKS")
+    }
+    else onResult(false, "error with writing streak")
+}
+
+fun fetchUserStreak(onDataReceived: (Streak) -> Unit, onFailure: (Exception) -> Unit) {
+    val database = FirebaseDatabase.getInstance()
+    val user = getCurrentUser()
+    var ref = database.getReference("streak")
+
+    if (user != null) ref = database.getReference(user.email.toString().substringBefore("@")) // Points to recipes node in Firebase
+
+    ref.addValueEventListener(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            var streak = Streak()
+            for (streakSnapShot in snapshot.children) {
+                val userStreak = streakSnapShot.getValue(Streak::class.java)
+                userStreak.let {
+                    if (it != null) {
+                        streak = it
+                    }
+                }
+            }
+            onDataReceived(streak)
         }
 
         override fun onCancelled(error: DatabaseError) {
