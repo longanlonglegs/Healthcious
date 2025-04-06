@@ -39,10 +39,11 @@ import com.pa1.logan.Healthcious.database.fetchUserRecipes
 import com.pa1.logan.Healthcious.database.getCurrentUser
 import com.pa1.logan.Healthcious.ui.composables.MainPage
 import com.pa1.logan.Healthcious.ui.composables.misc.Searchbar
+import com.pa1.logan.Healthcious.ui.composables.misc.StylishSearchBar
 import com.pa1.logan.Healthcious.ui.composables.recipe.RecipeList
 
 @Composable
-fun PurchaseList(navController: NavController?, paddingValues: PaddingValues) {
+fun PurchaseList(navController: NavController?) {
 
     var search by remember { mutableStateOf("") }
     val purchaseVM = remember { PurchaseVM() }
@@ -68,25 +69,18 @@ fun PurchaseList(navController: NavController?, paddingValues: PaddingValues) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(paddingValues)
     )
     {
-
-        Text(
-            "Stay healthy with these purchases",
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp).padding(bottom = 5.dp),
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 25.sp,
-            lineHeight = 30.sp
+        StylishSearchBar(
+            query = search,
+            onQueryChange = { search = it }
         )
-
-        Searchbar(search)
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(1),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(5.dp),
+                .padding(10.dp),
             verticalArrangement = Arrangement.spacedBy(5.dp),
             horizontalArrangement = Arrangement.spacedBy(5.dp),
         ) {

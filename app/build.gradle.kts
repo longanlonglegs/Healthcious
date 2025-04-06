@@ -62,11 +62,12 @@ dependencies {
     implementation(libs.firebase.storage.ktx)
     implementation(libs.firebase.database.ktx)
     implementation(libs.firebase.appcheck.playintegrity)
+    implementation(libs.androidx.runtime.livedata)
     testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    testImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation (libs.coil.compose)
@@ -74,5 +75,7 @@ dependencies {
     implementation (libs.androidx.material.icons.extended)
     implementation("com.github.jaikeerthick:Composable-Graphs:v1.2.3")
     implementation ("androidx.work:work-runtime-ktx:2.7.1")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.33.2-alpha")
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 
 }

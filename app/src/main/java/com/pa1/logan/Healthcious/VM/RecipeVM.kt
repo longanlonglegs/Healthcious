@@ -20,5 +20,5 @@ data class Recipe(
     var instructions: String = "",
     val allergens: List<String> = emptyList(),
     val ingredients: List<String> = emptyList(),
-    val cuisine: String = ""
+    val cuisine: String = "",
     )

@@ -1,6 +1,9 @@
 package com.pa1.logan.Healthcious.ui.composables.health
 
+import android.os.Build
 import android.util.Log
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,6 +24,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -37,6 +41,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -58,23 +63,40 @@ import com.example.compose.AppTheme
 import com.google.firebase.database.FirebaseDatabase
 import com.jaikeerthick.composable_graphs.composables.line.LineGraph
 import com.jaikeerthick.composable_graphs.composables.line.model.LineData
+import com.jaikeerthick.composable_graphs.composables.line.style.LineGraphColors
+import com.jaikeerthick.composable_graphs.composables.line.style.LineGraphFillType
+import com.jaikeerthick.composable_graphs.composables.line.style.LineGraphStyle
+import com.jaikeerthick.composable_graphs.composables.line.style.LineGraphVisibility
+import com.jaikeerthick.composable_graphs.style.LabelPosition
 import com.pa1.logan.Healthcious.R
 import com.pa1.logan.Healthcious.VM.Goals
+import com.pa1.logan.Healthcious.VM.HealthLog
 import com.pa1.logan.Healthcious.VM.ShoppingCartVM
 import com.pa1.logan.Healthcious.VM.Streak
 import com.pa1.logan.Healthcious.database.StreakWorker
 import com.pa1.logan.Healthcious.database.fetchUserEatenFood
 import com.pa1.logan.Healthcious.database.fetchUserGoals
+import com.pa1.logan.Healthcious.database.fetchUserHealthLog
+import com.pa1.logan.Healthcious.database.fetchUserHealthLogContinuous
 import com.pa1.logan.Healthcious.database.fetchUserStreak
+import com.pa1.logan.Healthcious.database.fetchUserStreakContinuous
 import com.pa1.logan.Healthcious.database.getCurrentUser
 import com.pa1.logan.Healthcious.ui.composables.misc.StarRatingBar
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import java.util.concurrent.TimeUnit
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun Health (navController: NavController?, paddingValues: PaddingValues) {
+fun Health (navController: NavController?) {
 
     var goal by remember { mutableStateOf(Goals()) }
     val cartVM = remember { ShoppingCartVM() }
@@ -86,9 +108,29 @@ fun Health (navController: NavController?, paddingValues: PaddingValues) {
     var currentCalories by remember { mutableFloatStateOf(0f) }
     var currentSugar by remember { mutableFloatStateOf(0f) }
     var currentSalt by remember { mutableFloatStateOf(0f) }
-    var progress by remember { mutableFloatStateOf(currentCalories / goal.targetCalories) }
 
-    val data = listOf(LineData(x = "Sun", y = 200), LineData(x = "Mon", y = 40))
+    var progress by remember { mutableFloatStateOf(if (streak.highestStreak == 0) 1f else (streak.currentStreak / streak.highestStreak).toFloat()) }
+
+    val graphStyle = LineGraphStyle(
+        visibility = LineGraphVisibility(
+            isYAxisLabelVisible = true,
+        ),
+        yAxisLabelPosition = LabelPosition.LEFT
+    )
+
+    var healthData by remember { mutableStateOf(listOf<LineData>()) }
+
+    // Display 10 items
+    val pagerState = rememberPagerState(pageCount = {
+        3
+    })
+
+    val tabList = listOf(
+        "Last 3 Days",
+        "Last Week",
+        "Last Month"
+    )
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         if (getCurrentUser() != null) {
@@ -110,16 +152,30 @@ fun Health (navController: NavController?, paddingValues: PaddingValues) {
                         currentSugar += item.sugar * item.quantity
                         currentSalt += item.salt * item.quantity
                     }
+
+                    healthStars = 5f
+                    if (currentCalories > goal.targetCalories) healthStars - 1
+                    if (currentSalt > goal.targetSalt) healthStars - 1
+                    if (currentSugar > goal.targetSugar) healthStars - 1
                 },
                 onFailure = { }
             )
 
-            fetchUserStreak(
+            fetchUserStreakContinuous(
                 onDataReceived = {
                     streak = it
                     Log.d("User Streak", "Fetched $streak streak!")
                 },
                 onFailure = { }
+            )
+
+            fetchUserHealthLogContinuous(
+                onDataReceived = {
+                    healthData = emptyList()
+                    for (hl in it) healthData += LineData(x = extractDayOfWeek(hl.date), y = hl.calories.toInt())
+                    Log.d("User Health Log", "Fetched $healthData healthlog!")
+                },
+                onFailure = {}
             )
         }
 
@@ -130,8 +186,7 @@ fun Health (navController: NavController?, paddingValues: PaddingValues) {
 
     LazyColumn(
         Modifier
-            .fillMaxSize()
-            .padding(paddingValues),
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -141,7 +196,6 @@ fun Health (navController: NavController?, paddingValues: PaddingValues) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(5.dp)
-                    .background(MaterialTheme.colorScheme.inverseOnSurface)
             )
             {
 
@@ -161,13 +215,17 @@ fun Health (navController: NavController?, paddingValues: PaddingValues) {
                         )
 
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                            LinearProgressIndicator(
-                                progress = { 0.5f },
+//                            LinearProgressIndicator(
+//                                progress = { progress },
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .width(10.dp),
+//                            )
+
+                            HorizontalDivider(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .width(10.dp),
-                                trackColor = MaterialTheme.colorScheme.primaryContainer,
-                                color = MaterialTheme.colorScheme.tertiary
+                                    .width(10.dp)
                             )
                         }
 
@@ -179,7 +237,7 @@ fun Health (navController: NavController?, paddingValues: PaddingValues) {
                     }
                     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
 
-                        if (goal.streak < 3) Image(
+                        if (streak.currentStreak < 3) Image(
                                 painter = painterResource(R.drawable.orange_fire), "streak",
                                 modifier = Modifier.size(100.dp)
                             )
@@ -198,32 +256,20 @@ fun Health (navController: NavController?, paddingValues: PaddingValues) {
             }
         }
 
-        stickyHeader {
-            Text("Progress", modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 15.dp),
-                textAlign = TextAlign.Start, fontWeight = FontWeight.Bold)
-        }
-
         item {
+            Text(
+                "Progress", modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 15.dp),
+                textAlign = TextAlign.Start, fontWeight = FontWeight.Bold
+            )
 
             Card(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(5.dp)
+                    .padding(horizontal = 5.dp)
+                    .padding(bottom = 5.dp)
             ) {
-
-                // Display 10 items
-                val pagerState = rememberPagerState(pageCount = {
-                    3
-                })
-
-                val tabList = listOf(
-                    "Today",
-                    "Last 3 Days",
-                    "Last Week"
-                )
-                val scope = rememberCoroutineScope()
 
                 TabRow(
                     selectedTabIndex = pagerState.currentPage,
@@ -238,52 +284,88 @@ fun Health (navController: NavController?, paddingValues: PaddingValues) {
                                 }
                             },
                             text = {
-                                when (pagerState.currentPage) {
-                                    0 -> Text(text = title)
-                                    1 -> Text(text = title)
-                                    2 -> Text(text = title)
-                                }
+                                Text(title)
                             }
                         )
                     }
                 }
+            }
 
-                HorizontalPager(
-                    state = pagerState,
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+
+                Surface(
                     modifier = Modifier.fillMaxSize()
-                ) { page ->
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-                    Surface(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            when(page) {
+
+                        if (healthData.size >= 2) {
+
+                            when (page) {
                                 0 ->
-                                LineGraph(
-                                    modifier = Modifier
-                                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                                    data = data,
-                                    onPointClick = { value: LineData ->
-                                        // do something with value
-                                    },
-                                )
-                                1 -> Text(text = "Last 3 Days")
-                                2 -> Text(text = "Last Week")
+
+                                    LineGraph(
+                                        modifier = Modifier
+                                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                                        data = if (healthData.size > 2) healthData.subList(
+                                            0,
+                                            2
+                                        ) else healthData,
+                                        onPointClick = { value: LineData ->
+                                            Toast.makeText(context, "Date: ${value.x}, Calories: ${value.y}", Toast.LENGTH_SHORT).show()
+                                        },
+                                        style = graphStyle
+                                    )
+
+                                1 ->
+
+                                    LineGraph(
+                                        modifier = Modifier
+                                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                                        data = if (healthData.size > 6) healthData.subList(
+                                            0,
+                                            6
+                                        ) else healthData,
+                                        onPointClick = { value: LineData ->
+                                            Toast.makeText(context, "Date: ${value.x}, Calories: ${value.y}", Toast.LENGTH_SHORT).show()
+                                        },
+                                        style = graphStyle
+                                    )
+
+                                2 ->
+
+                                    LineGraph(
+                                        modifier = Modifier
+                                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                                        data = if (healthData.size > 30) healthData.subList(
+                                            0,
+                                            30
+                                        ) else healthData,
+                                        onPointClick = { value: LineData ->
+                                            Toast.makeText(context, "Date: ${value.x}, Calories: ${value.y}", Toast.LENGTH_SHORT).show()
+                                        },
+                                        style = graphStyle
+                                    )
                             }
                         }
+
+                        else {
+                            Text("Track for a few days first!", textAlign = TextAlign.Center,modifier = Modifier.fillMaxWidth())
+                        }
+
                     }
                 }
             }
         }
 
-        stickyHeader {
+        item {
             Text("Health Statistics", modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 15.dp),
                 textAlign = TextAlign.Start, fontWeight = FontWeight.Bold)
-        }
-
-        item {
 
             Card(
                 modifier = Modifier
@@ -303,7 +385,7 @@ fun Health (navController: NavController?, paddingValues: PaddingValues) {
                 )
                 {
                     CircularProgressIndicator(
-                        progress = {progress},
+                        progress = {currentCalories / goal.targetCalories},
                         modifier = Modifier
                             .size(100.dp)
                             .padding(10.dp),
@@ -342,7 +424,7 @@ fun Health (navController: NavController?, paddingValues: PaddingValues) {
         }
 
         item {
-            Row(Modifier.fillMaxWidth()) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
 
                 Card(
                     modifier = Modifier
@@ -435,53 +517,61 @@ fun Health (navController: NavController?, paddingValues: PaddingValues) {
             }
         }
 
-        item {
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(5.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest)
-            )
-            {
-
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp), horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)
-                ) {
-                    Text(
-                        "Health Rating",
-                        modifier = Modifier.padding(horizontal = 30.dp),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 25.sp
-                    )
-
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        StarRatingBar(
-                            maxStars = 5,
-                            rating = healthStars,
-                            onRatingChanged = { healthStars = it }
-                        )
-                    }
-
-                    Text(
-                        "How is it calculated?",
-                        modifier = Modifier.padding(horizontal = 30.dp),
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                }
-            }
-
-        }
+//        item {
+//
+//            Card(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(5.dp),
+//                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest)
+//            )
+//            {
+//
+//                Column(
+//                    Modifier
+//                        .fillMaxWidth()
+//                        .padding(10.dp), horizontalAlignment = Alignment.Start,
+//                    verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)
+//                ) {
+//                    Text(
+//                        "Health Rating",
+//                        modifier = Modifier.padding(horizontal = 30.dp),
+//                        fontWeight = FontWeight.Bold,
+//                        fontSize = 20.sp
+//                    )
+//
+//                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+//                        StarRatingBar(
+//                            maxStars = 5,
+//                            rating = healthStars,
+//                            onRatingChanged = {}
+//                        )
+//                    }
+//
+//                    Text(
+//                        "How is it calculated?",
+//                        modifier = Modifier.padding(horizontal = 30.dp),
+//                        color = MaterialTheme.colorScheme.secondary
+//                    )
+//                }
+//            }
+//
+//        }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun HealthPreview() {
-    AppTheme {
-        Health(navController = null, paddingValues = PaddingValues(0.dp))
-    }
+@RequiresApi(Build.VERSION_CODES.O)
+fun getCompactDayDateTime(): String {
+    val today = LocalDate.now()
+    val formatter = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.getDefault())
+    return today.format(formatter)
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+fun extractDayOfWeek(input: String): String {
+    val formatter = DateTimeFormatter.ofPattern("EEEE d MMMM yyyy", Locale.ENGLISH)
+    val dateTime = LocalDate.parse(input, formatter)
+
+    // Get day of week from the dateTime object
+    return dateTime.dayOfWeek.toString().lowercase().replaceFirstChar { it.uppercase() }
 }

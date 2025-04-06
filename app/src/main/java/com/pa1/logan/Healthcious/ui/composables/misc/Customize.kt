@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -114,6 +115,7 @@ fun Customize(navController: NavController?) {
 @Composable
 fun Custom(paddingValues: PaddingValues, navController: NavController?) {
 
+    var store by remember { mutableStateOf("") }
     var dish by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var allergen by remember { mutableStateOf("") }
@@ -142,7 +144,7 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
             .padding(paddingValues)
             .padding(horizontal = 5.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ){
 
         item {
@@ -213,9 +215,11 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
         item {
             TextField(
                 value = calories,
-                onValueChange = { calories = it },
+                onValueChange = {
+                    calories = it
+                                },
                 Modifier.fillMaxWidth(),
-                label = { Text("Calories") },
+                label = { Text("Calories (kCal)") },
                 singleLine = true,
             )
         }
@@ -223,9 +227,12 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
         item {
             TextField(
                 value = sugar,
-                onValueChange = { sugar = it },
+                onValueChange = {
+                    sugar = it
+
+                },
                 Modifier.fillMaxWidth(),
-                label = { Text("Sugar") },
+                label = { Text("Sugar (g)") },
                 singleLine = true,
             )
         }
@@ -233,9 +240,11 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
         item {
             TextField(
                 value = salt,
-                onValueChange = { salt = it },
+                onValueChange = {
+                    salt = it
+                },
                 Modifier.fillMaxWidth(),
-                label = { Text("Salt") },
+                label = { Text("Salt (mg)") },
                 singleLine = true,
             )
         }
@@ -247,7 +256,7 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
                     value = ingredients,
                     onValueChange = { ingredients = it },
                     Modifier.fillMaxWidth(),
-                    label = { Text("Ingredients") },
+                    label = { Text("Ingredients, comma separated") },
                     singleLine = true,
                 )
             }
@@ -258,7 +267,7 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
                     value = allergen,
                     onValueChange = { allergen = it },
                     Modifier.fillMaxWidth(),
-                    label = { Text("Allergen") },
+                    label = { Text("Allergen, comma separated") },
                     singleLine = true,
                 )
             }
@@ -274,6 +283,18 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
             }
         }
 
+        else {
+            item {
+                TextField(
+                    value = store,
+                    onValueChange = { store = it },
+                    Modifier.fillMaxWidth(),
+                    label = { Text("Store") },
+                    singleLine = true,
+                )
+            }
+        }
+
         item {
 
             Row(
@@ -282,87 +303,115 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
             )
             {
                 Button(
+                    modifier = Modifier.width(125.dp),
+
                     onClick = {
-                        if (canUpload) {
 
-                            if (getCurrentUser() != null) {
-                                if (selectedIndex == 0) {
+                        if (sugar.length > 8 || salt.length > 8 || calories.length > 8) Toast.makeText(context, "Input Invalid", Toast.LENGTH_SHORT).show()
 
-                                    uploadRecipeImg(dish, imageUri!!, onUploadSuccess = { url ->
-                                        uploadedImageUrl = url
+                        else try {
 
-                                    })
+                            if (canUpload) {
 
-                                    allergenList = allergen.split("[ ]*,[ ]*".toRegex())
-                                    ingredientList = ingredients.split("[ ]*,[ ]*".toRegex())
+                                if (getCurrentUser() != null) {
+                                    if (selectedIndex == 0) {
 
-                                    writeUserRecipe(Recipe(
-                                        dish,
-                                        calories.toFloat(),
-                                        salt.toFloat(),
-                                        sugar.toFloat(),
-                                        description,
-                                        allergenList,
-                                        ingredientList,
-                                        cuisine
-                                    ),
-                                        onResult = { success, message ->
-                                            if (success) {
-                                                Toast.makeText(
-                                                    context,
-                                                    "Upload Successful",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                                navController?.navigate("main")
-                                            } else Toast.makeText(
-                                                context,
-                                                message,
-                                                Toast.LENGTH_SHORT
+                                        uploadRecipeImg(dish, imageUri!!, onUploadSuccess = { url ->
+                                            uploadedImageUrl = url
+
+                                        })
+
+                                        allergenList = allergen.split("[ ]*,[ ]*".toRegex())
+                                        ingredientList = ingredients.split("[ ]*,[ ]*".toRegex())
+
+                                        if (salt.toFloat() < 0 && calories.toFloat() < 0 && sugar.toFloat() < 0) Toast.makeText(context, "Invalid Input", Toast.LENGTH_SHORT).show()
+
+                                        else {
+                                            writeUserRecipe(Recipe(
+                                                dish,
+                                                calories.toFloat(),
+                                                salt.toFloat(),
+                                                sugar.toFloat(),
+                                                description,
+                                                allergenList,
+                                                ingredientList,
+                                                cuisine
+                                            ),
+                                                onResult = { success, message ->
+                                                    if (success) {
+                                                        Toast.makeText(
+                                                            context,
+                                                            "Upload Successful",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                        navController?.navigate("main")
+                                                    } else Toast.makeText(
+                                                        context,
+                                                        message,
+                                                        Toast.LENGTH_SHORT
+                                                    )
+                                                        .show()
+                                                }
                                             )
+
+                                            Toast.makeText(context, "Upload Successful", Toast.LENGTH_SHORT)
                                                 .show()
+                                            navController?.navigate("main")
                                         }
-                                    )
-                                }
 
-                                else {
 
-                                    uploadPurchaseImg(dish, imageUri!!, onUploadSuccess = { url ->
-                                        uploadedImageUrl = url
+                                    } else {
 
-                                    })
+                                        if (salt.toFloat() < 0 && calories.toFloat() < 0 && sugar.toFloat() < 0) Toast.makeText(context, "Invalid Input", Toast.LENGTH_SHORT).show()
 
-                                    writeUserPurchase(Purchases(
-                                        dish,
-                                        calories.toFloat(),
-                                        salt.toFloat(),
-                                        sugar.toFloat(),
-                                    ),
-                                        onResult = { success, message ->
-                                            if (success) {
-                                                Toast.makeText(
-                                                    context,
-                                                    "Upload Successful",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                                navController?.navigate("main")
-                                            } else Toast.makeText(
-                                                context,
-                                                message,
-                                                Toast.LENGTH_SHORT
+                                        else {
+
+                                            uploadPurchaseImg(
+                                                dish,
+                                                imageUri!!,
+                                                onUploadSuccess = { url ->
+                                                    uploadedImageUrl = url
+
+                                                })
+
+                                            writeUserPurchase(Purchases(
+                                                dish,
+                                                calories.toFloat(),
+                                                salt.toFloat(),
+                                                sugar.toFloat(),
+                                                store
+                                            ),
+                                                onResult = { success, message ->
+                                                    if (success) {
+                                                        Toast.makeText(
+                                                            context,
+                                                            "Upload Successful",
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                        navController?.navigate("main")
+                                                    } else Toast.makeText(
+                                                        context,
+                                                        message,
+                                                        Toast.LENGTH_SHORT
+                                                    )
+                                                        .show()
+                                                }
                                             )
-                                                .show()
-                                        }
-                                    )
-                                }
 
-                                Toast.makeText(context, "Upload Successful", Toast.LENGTH_SHORT)
+                                            Toast.makeText(context, "Upload Successful", Toast.LENGTH_SHORT)
+                                                .show()
+                                            navController?.navigate("main")
+                                        }
+                                    }
+                                } else Toast.makeText(context, "Upload Failed", Toast.LENGTH_SHORT)
                                     .show()
-                                navController?.navigate("main")
+
                             }
 
-                            else Toast.makeText(context, "Upload Failed", Toast.LENGTH_SHORT).show()
-
+                            else Toast.makeText(context, "Please upload a picture first", Toast.LENGTH_SHORT).show()
                         }
+
+                        catch (e: Exception) {Toast.makeText(context, "Please input all the fields, including image correctly", Toast.LENGTH_SHORT).show()}
                         canUpload = false
                     },
 
@@ -375,6 +424,8 @@ fun Custom(paddingValues: PaddingValues, navController: NavController?) {
                         Toast.makeText(context, "Dish has been deleted!", Toast.LENGTH_SHORT).show()
                         navController?.navigate("main")
                     },
+
+                    modifier = Modifier.width(125.dp)
 
                     ) {
                     Text("Delete")

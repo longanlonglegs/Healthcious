@@ -69,7 +69,6 @@ fun showImg(imagePath: String): Painter {
    getDownloadUrl(imagePath,
       onSuccess = { url -> imageUrl = url },
       onFailure = {
-         Toast.makeText(context, "Failed to load image", Toast.LENGTH_SHORT).show()
       }
    )
 

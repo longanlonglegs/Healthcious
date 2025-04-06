@@ -27,6 +27,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.firebase.database.getValue
 import com.pa1.logan.Healthcious.VM.Goals
+import com.pa1.logan.Healthcious.VM.HealthLog
 import com.pa1.logan.Healthcious.VM.Purchases
 import com.pa1.logan.Healthcious.VM.Recipe
 import com.pa1.logan.Healthcious.VM.RecipeVM
@@ -224,6 +225,33 @@ fun fetchUserEatenFood(onDataReceived: (List<shoppingCartItem>) -> Unit, onFailu
     })
 }
 
+
+fun fetchUserEatenFoodOnce(onDataReceived: (List<shoppingCartItem>) -> Unit, onFailure: (Exception) -> Unit) {
+    val database = FirebaseDatabase.getInstance()
+    val user = getCurrentUser()
+    val ref = if (user != null) {
+        database.getReference(user.email.toString().substringBefore("@")).child("eaten food")
+    } else {
+        database.getReference("eaten food")
+    }
+
+    // ✅ Fetch data **only once**, instead of listening continuously
+    ref.get().addOnSuccessListener { snapshot ->
+        var efList = mutableListOf<shoppingCartItem>()
+        for (efSS in snapshot.children) {
+            val userE = efSS.getValue(shoppingCartItem::class.java)
+            if (userE != null) {
+                efList.add(userE)
+            }
+        }
+        onDataReceived(efList)
+    }.addOnFailureListener { error ->
+        Log.e("Firebase", "Error fetching data: ${error.message}")
+        onFailure(error)
+    }
+}
+
+
 fun writeUserGoals(goals: Goals, onResult: (Boolean, String?) -> Unit) {
 
     val ref = Firebase.database.reference
@@ -231,7 +259,7 @@ fun writeUserGoals(goals: Goals, onResult: (Boolean, String?) -> Unit) {
     val user = getCurrentUser()
 
     if (user != null ) {
-        ref.child(user.email.toString().substringBefore("@")).child("goals").setValue(goals)
+        ref.child(user.email.toString().substringBefore("@")).child("goals").child("goal").setValue(goals)
         onResult(true, "IT WORKS")
     }
     else onResult(false, "error with writing goals")
@@ -242,7 +270,7 @@ fun fetchUserGoals(onDataReceived: (Goals) -> Unit, onFailure: (Exception) -> Un
     val user = getCurrentUser()
     var ref = database.getReference("goals")
 
-    if (user != null) ref = database.getReference(user.email.toString().substringBefore("@")) // Points to recipes node in Firebase
+    if (user != null) ref = database.getReference(user.email.toString().substringBefore("@")).child("goals") // Points to recipes node in Firebase
 
     ref.addValueEventListener(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
@@ -272,7 +300,7 @@ fun writeUserStreak(streak: Streak, onResult: (Boolean, String?) -> Unit) {
     val user = getCurrentUser()
 
     if (user != null ) {
-        ref.child(user.email.toString().substringBefore("@")).child("streak").setValue(streak)
+        ref.child(user.email.toString().substringBefore("@")).child("streak").child("streak").setValue(streak)
         onResult(true, "IT WORKS")
     }
     else onResult(false, "error with writing streak")
@@ -281,15 +309,42 @@ fun writeUserStreak(streak: Streak, onResult: (Boolean, String?) -> Unit) {
 fun fetchUserStreak(onDataReceived: (Streak) -> Unit, onFailure: (Exception) -> Unit) {
     val database = FirebaseDatabase.getInstance()
     val user = getCurrentUser()
-    var ref = database.getReference("streak")
+    val ref = if (user != null) {
+        database.getReference(user.email.toString().substringBefore("@")).child("streak")
+    } else {
+        database.getReference("streak")
+    }
 
-    if (user != null) ref = database.getReference(user.email.toString().substringBefore("@")) // Points to recipes node in Firebase
+    // ✅ Fetch data **only once**, instead of listening continuously
+    ref.get().addOnSuccessListener { snapshot ->
+        var streak = Streak()
+        for (streakSnapShot in snapshot.children) {
+            val userStreak = streakSnapShot.getValue(Streak::class.java)
+            if (userStreak != null) {
+                streak = userStreak
+            }
+        }
+        onDataReceived(streak)
+    }.addOnFailureListener { error ->
+        Log.e("Firebase", "Error fetching data: ${error.message}")
+        onFailure(error)
+    }
+}
+
+fun fetchUserStreakContinuous(onDataReceived: (Streak) -> Unit, onFailure: (Exception) -> Unit) {
+    val database = FirebaseDatabase.getInstance()
+    val user = getCurrentUser()
+    val ref = if (user != null) {
+        database.getReference(user.email.toString().substringBefore("@")).child("streak")
+    } else {
+        database.getReference("streak")
+    }
 
     ref.addValueEventListener(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
             var streak = Streak()
-            for (streakSnapShot in snapshot.children) {
-                val userStreak = streakSnapShot.getValue(Streak::class.java)
+            for (streakSnapshot in snapshot.children) {
+                val userStreak = streakSnapshot.getValue(Streak::class.java)
                 userStreak.let {
                     if (it != null) {
                         streak = it
@@ -297,6 +352,74 @@ fun fetchUserStreak(onDataReceived: (Streak) -> Unit, onFailure: (Exception) -> 
                 }
             }
             onDataReceived(streak)
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("Firebase", "Error fetching data: ${error.message}")
+            onFailure(error.toException())
+        }
+    })
+}
+
+fun writeUserHealthLog(healthLog: HealthLog, onResult: (Boolean, String?) -> Unit) {
+
+    val ref = Firebase.database.reference
+
+    val user = getCurrentUser()
+
+    if (user != null ) {
+        ref.child(user.email.toString().substringBefore("@")).child("healthlog")
+            .child(healthLog.date).setValue(healthLog)
+        onResult(true, "IT WORKS")
+    }
+
+    else {
+        onResult(false, "error with writing health log")
+    }
+}
+
+fun fetchUserHealthLog(onDataReceived: (List<HealthLog>) -> Unit, onFailure: (Exception) -> Unit) {
+    val database = FirebaseDatabase.getInstance()
+    val user = getCurrentUser()
+    val ref = if (user != null) {
+        database.getReference(user.email.toString().substringBefore("@")).child("healthlog")
+    } else {
+        database.getReference("streak")
+    }
+
+    // ✅ Fetch data **only once**, instead of listening continuously
+    ref.get().addOnSuccessListener { snapshot ->
+        var healthLogList = mutableListOf<HealthLog>()
+        for (healthLogSnapshot in snapshot.children) {
+            val userHL = healthLogSnapshot.getValue(HealthLog::class.java)
+            if (userHL != null) {
+                healthLogList.add(userHL)
+            }
+        }
+        onDataReceived(healthLogList)
+    }.addOnFailureListener { error ->
+        Log.e("Firebase", "Error fetching data: ${error.message}")
+        onFailure(error)
+    }
+}
+
+fun fetchUserHealthLogContinuous(onDataReceived: (List<HealthLog>) -> Unit, onFailure: (Exception) -> Unit) {
+    val database = FirebaseDatabase.getInstance()
+    val user = getCurrentUser()
+    val ref = if (user != null) {
+        database.getReference(user.email.toString().substringBefore("@")).child("healthlog")
+    } else {
+        database.getReference("healthlog")
+    }
+
+    ref.addValueEventListener(object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            val hlList = mutableListOf<HealthLog>()
+            for (hlSS in snapshot.children) {
+                val hl = hlSS.getValue(HealthLog::class.java)
+                hl?.let { hlList.add(it) }
+            }
+            onDataReceived(hlList)
         }
 
         override fun onCancelled(error: DatabaseError) {

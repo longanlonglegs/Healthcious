@@ -2,13 +2,11 @@ package com.pa1.logan.Healthcious.VM
 
 import com.google.firebase.database.ServerValue
 import com.google.firebase.database.ServerValue.TIMESTAMP
+import java.time.format.DateTimeFormatter
 
 class HealthVM {
 
-    var totalCalories = 0f
-    var totalSugar = 0f
-    var totalSalt = 0f
-
+    var healthLogList = mutableListOf<HealthLog>()
 }
 
 data class Goals(
@@ -22,4 +20,9 @@ data class Goals(
 data class Streak(
     val currentStreak: Int = 0,
     val highestStreak: Int = 0,
+)
+
+data class HealthLog(
+    val date: String = "01/01/2001",
+    val calories: Float = 0f,
 )

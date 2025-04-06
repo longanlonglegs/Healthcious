@@ -81,19 +81,10 @@ fun Dish(navController: NavController?, purchases: Purchases) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Purchase", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
+                title = { Text("Purchase") },
                 navigationIcon = { IconButton(onClick = {
-                    navController?.navigate("purchase")
+                    navController?.navigate("main")
                 }) { Icon(Icons.AutoMirrored.Default.ArrowBack, "go back") } },
-                actions = {
-                    IconButton(onClick = {
-                        TODO("star a recipe")
-                    }) {
-
-                        Icon(Icons.Default.Favorite, "save this purchase")
-
-                    }
-                }
             )
         },
         content = {
@@ -140,7 +131,7 @@ fun DishScreen(paddingValues: PaddingValues, purchases: Purchases, navController
 
         Column {
             Text(
-                "Purchase",
+                if (purchases.store != "") purchases.store else "unknown store",
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 10.dp),
@@ -207,7 +198,7 @@ fun DishScreen(paddingValues: PaddingValues, purchases: Purchases, navController
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.padding(16.dp).clip(RoundedCornerShape(64.dp)).background(MaterialTheme.colorScheme.secondaryContainer)
             ) {
-                CounterCircleButton("-", onClick = { quantity-- })
+                CounterCircleButton("-", onClick = {if (quantity > 1) quantity-- })
                 Text(
                     text = quantity.toString(),
                     fontSize = 24.sp,
@@ -221,6 +212,7 @@ fun DishScreen(paddingValues: PaddingValues, purchases: Purchases, navController
 
         Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Bottom){
             FilledTonalButton(
+                modifier = Modifier.padding(10.dp),
                 onClick = {
                     for (food in eatenList) {
                         if (food.name == purchases.name && food.recipes == null) {
@@ -244,7 +236,7 @@ fun DishScreen(paddingValues: PaddingValues, purchases: Purchases, navController
                                     "Om Nom! Yummy in my tummy!",
                                     Toast.LENGTH_SHORT
                                 ).show()
-                                navController?.navigate("purchase")
+                                navController?.navigate("main")
                             } else {
                                 Toast.makeText(
                                     context,
@@ -259,7 +251,7 @@ fun DishScreen(paddingValues: PaddingValues, purchases: Purchases, navController
                 },
             )
             {
-                Text("Eat Now!", fontSize = 30.sp)
+                Text("Eat Now!", fontSize = 20.sp)
             }
         }
     }

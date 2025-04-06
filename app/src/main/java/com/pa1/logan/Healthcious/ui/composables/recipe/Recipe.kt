@@ -98,9 +98,9 @@ fun Recipe(navController: NavController?, recipe: Recipe) {
                     )
 
 
-                    Text(recipe.allergens.toString(), modifier = Modifier.padding(5.dp), color = Color.White)
+                    Text(if (recipe.allergens.isNotEmpty()) recipe.allergens.toString().replace("+", " ") else "", modifier = Modifier.padding(5.dp), color = Color.White)
 
-                    Text(recipe.cuisine, color = Color.White)
+                    Text(recipe.cuisine.replace("+", " "), color = Color.White)
 
                 }
             }

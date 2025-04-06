@@ -23,7 +23,7 @@ fun StarRatingBar(
 ) {
     val density = LocalDensity.current.density
     val starSize = (20f * density).dp
-    val starSpacing = (5f * density).dp
+    val starSpacing = (10f * density).dp
 
     Row(
         modifier = Modifier.selectableGroup(),
