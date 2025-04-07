@@ -77,13 +77,13 @@ fun MyCart(navController: NavController?) {
                         type = if (cartItem.recipes != null) "recipes" else "purchases"
 
                         Image(
-                            painter = showImg("images/${type}/${cartItem.name}.png"), "cart item",
+                            painter = showImg("images/${type}/${cartItem.name.replace("+", " ")}.png"), "cart item",
                             modifier = Modifier.size(100.dp),
                             contentScale = ContentScale.Crop,
                             )
 
                         Column (verticalArrangement = Arrangement.spacedBy(2.dp), modifier = Modifier.padding(5.dp)){
-                            Text(cartItem.name, fontWeight = FontWeight.Bold)
+                            Text(cartItem.name.replace("+", " "), fontWeight = FontWeight.Bold)
                             Text("${cartItem.calories.toInt()}kcal")
                             Text("Quantity: ${cartItem.quantity}")
                         }

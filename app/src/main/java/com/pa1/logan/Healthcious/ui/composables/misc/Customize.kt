@@ -92,15 +92,6 @@ fun Customize(navController: NavController?) {
                 Icon(Icons.AutoMirrored.Default.ArrowBack, "back")
             }},
 
-            actions = {
-                IconButton(
-                    onClick = {
-                        navController?.navigate("signin")
-                    }
-                ){
-                    Icon(Icons.Default.AccountCircle, "account")
-                }
-            }
         )},
 
         content = {

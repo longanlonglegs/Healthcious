@@ -195,6 +195,7 @@ fun ItemScreen(paddingValues: PaddingValues, recipe: Recipe, navController: NavC
                 modifier = Modifier.fillMaxWidth(),
             )
             Text("Allergens: ${ recipe.allergens.toString().replace("+", " ") }", color = Color.Red)
+            Text("Ingredients: ${ recipe.ingredients.toString().replace("+", " ") }")
         }
 
         Row(modifier = Modifier
